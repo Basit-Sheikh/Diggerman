@@ -7,8 +7,8 @@
 
 // Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 class StudentWorld;
-class Actor : public GraphObject {
 
+class Actor : public GraphObject {
 public:
 	Actor(int imageID, int startX, int startY, Direction dir, double size, unsigned int depth, StudentWorld* sw) : 
 		GraphObject(imageID, startX, startY, dir, size, depth), world(sw){};

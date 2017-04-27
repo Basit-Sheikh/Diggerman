@@ -54,5 +54,4 @@ void DiggerMan::moveDiggerMan() {
 	}
 }
 
-void DiggerMan::clearDirt(){
-}
+void DiggerMan::clearDirt(){}
