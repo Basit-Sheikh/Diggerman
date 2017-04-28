@@ -40,6 +40,28 @@ int StudentWorld::move()
 	return GWSTATUS_CONTINUE_GAME;
 
 }
+
+void StudentWorld::removeDirt(int x, int y){
+	cout << x << " " << y << endl;
+	if (x < 61 && y < 57)
+		for (int i = x; i < x + 4; i++)
+			for (int j = y; j < y + 4; j++)
+				dirt[i][j]->setVisible(false);
+	else if (x < 61 && y == 57)
+		for (int i = x; i < x + 4 ; i++)
+			for (int j = y; j < y + 3; j++)
+				dirt[i][j]->setVisible(false);
+	else if (x < 61 && y == 58)
+		for (int i = x; i < x + 4; i++)
+		for (int j = y; j < y + 2; j++)
+			dirt[i][j]->setVisible(false);
+	else if (x < 61 && y == 59)
+		for (int i = x; i < x + 4; i++)
+			for (int j = y; j < y + 1; j++)
+				dirt[i][j]->setVisible(false);
+	else;
+}
+
+
 int StudentWorld::getCurKey() { return currentKey; }
 void StudentWorld::cleanUp(){}
-

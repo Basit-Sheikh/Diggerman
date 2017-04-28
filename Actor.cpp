@@ -5,8 +5,8 @@
 
 void DiggerMan::doSomething(){
 	if (getWorld()->getLives() > 0) {
-		clearDirt();
 		moveDiggerMan();
+		clearDirt(this);
 	}
 }
 
@@ -54,4 +54,9 @@ void DiggerMan::moveDiggerMan() {
 	}
 }
 
-void DiggerMan::clearDirt(){}
+void DiggerMan::clearDirt(DiggerMan *dg){
+	int x = dg->getX();
+	int y = dg->getY();
+	getWorld()->removeDirt(x, y);
+
+}

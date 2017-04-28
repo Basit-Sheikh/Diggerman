@@ -21,8 +21,7 @@ public:
 	virtual int move();
 	virtual void cleanUp();
 	int getCurKey();
-
-
+	void removeDirt(int x, int y);
 private:
 	int currentKey;
 	DiggerMan* dm;

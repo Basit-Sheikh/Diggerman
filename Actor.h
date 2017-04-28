@@ -31,7 +31,7 @@ public:
 	virtual void doSomething();
 private:
 	void moveDiggerMan();
-	void clearDirt();
+	void clearDirt(DiggerMan *dg);
 };
 class Boulder : public Actor {
 
