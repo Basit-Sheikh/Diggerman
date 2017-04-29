@@ -60,3 +60,11 @@ void DiggerMan::clearDirt(DiggerMan *dg){
 	getWorld()->removeDirt(x, y);
 
 }
+
+
+void TempGoldNugget::doSomething() {
+	if (getTicksLeftTillDeath() == 0)
+		setDead(); 
+	
+
+}

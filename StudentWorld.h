@@ -6,6 +6,8 @@
 #include <string>
 #include "Actor.h"
 #include "GraphObject.h"
+#include <algorithm>
+#include<ctime>
 #include <vector>
 using namespace std;
 
@@ -22,6 +24,9 @@ public:
 	virtual void cleanUp();
 	int getCurKey();
 	void removeDirt(int x, int y);
+	int numOfBoulders();
+	int numOfGoldNuggets();
+	int numOfOilBarrels();
 private:
 	int currentKey;
 	DiggerMan* dm;

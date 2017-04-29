@@ -43,5 +43,37 @@ class HardcoreProtester : public Protester {
 
 };
 
+class Goodies :public Actor {
+public:
+	Goodies(StudentWorld* sw,const int img, int randX, int randY) :Actor(img, randX, randY, right, 1.0, 2, sw) {}
+	void setDead() { alive = false; }; //set bool to false
+	virtual void doSomething() {};
+
+private:
+	bool alive = true;
+};
+
+class TempGoldNugget :public Goodies {
+public:
+	TempGoldNugget(int deathTicks, int randX, int randY, StudentWorld* sw) :Goodies(sw, IMID_GOLD, randX, randY), ticksLeftTillDeath(deathTicks) { this->setVisible(true); }
+	int getTicksLeftTillDeath() { return ticksLeftTillDeath; } //returns how many ticks i have till this object dies
+	void decreaseLifeTicks() { ticksLeftTillDeath--; } //decreases their ticks by one
+	virtual void doSomething();
+
+private:
+	int ticksLeftTillDeath;
+
+};
+
+class PermGoldNugget :public Goodies {
+public:
+PermGoldNugget(StudentWorld* sw,int randX, int randY):Goodies(sw,IMID_GOLD,randX,randY){}
+
+bool DmInVicinity(int x, int y) { return true; }//pass in the getX and getY from the pointer to the actor
+void GoldPickedUp() { found = true; } //gold was found
+virtual void doSomething() {}; //uses the DmInvicinty function to see if DM is in vicinty and then uses GoldPickedUp to indicate that the gold has been found
+private:
+	bool found = false;
+};
 
 #endif // ACTOR_H_

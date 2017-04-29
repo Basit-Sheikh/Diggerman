@@ -22,6 +22,13 @@ int StudentWorld::init(){
 				dirt[i][j]->setVisible(true);
 		}
 	}
+	//Attempting to generate random x,y coordinates to feed to constructor of gold nugget objects so I can push them to the vector of object pointers
+	/*for (int i = 0; i < numOfGoldNuggets(); i++) {
+		srand(time(NULL));
+		int randX = rand() % 61;
+		int randY = rand() % 61;
+	}*/
+
 	return GWSTATUS_CONTINUE_GAME;
 }
 int StudentWorld::move()
@@ -65,3 +72,7 @@ void StudentWorld::removeDirt(int x, int y){
 
 int StudentWorld::getCurKey() { return currentKey; }
 void StudentWorld::cleanUp(){}
+int StudentWorld::numOfGoldNuggets() { return min((int)(5 - getLevel()) / 2, 2);} //from spec sheet pg 17
+int StudentWorld::numOfBoulders() {return min((int)(getLevel()) / 4, 7); } //from spec sheet pg 17
+int StudentWorld::numOfOilBarrels(){return min((int)(2+ getLevel()), 18);} //from spec sheet pg 17
+
