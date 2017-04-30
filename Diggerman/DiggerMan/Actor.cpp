@@ -1,14 +1,20 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 
+// Students:  Add code to this file (if you wish), Actor.h, StudentWorld.h, and StudentWorld.cpp
+
+
+
+
+
 /*
 ----------------------------
 ACTOR IMPLEMENTATION
 ----------------------------
 */
-bool Actor::isDiggerManNearMe() {
-	return true;
-}
+bool Actor::isDiggerManNearMe() {return true;}
+
+
 /*
 ----------------------------
 DIGGERMAN IMPLEMENTATION
@@ -104,8 +110,9 @@ void Boulder::doSomething() {
 	case done:
 		break;
 	}
-}
 
+
+}
 
 bool Boulder::isDirtUnderMe()
 {

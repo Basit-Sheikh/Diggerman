@@ -33,6 +33,7 @@ private:
 	DiggerMan* dm;
 	Dirt* dirt[64][64];
 	Boulder* b;
+	void fillDirt();
 };
 
 #endif // STUDENTWORLD_H_

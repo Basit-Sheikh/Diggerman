@@ -11,20 +11,9 @@ int StudentWorld::init() {
 	currentKey = -1;
 	dm = new DiggerMan(this);
 	dm->setVisible(true);
-	for (int i = 0; i < VIEW_WIDTH; i++) {
-		for (int j = 0; j < VIEW_HEIGHT - 4; j++) {
-			dirt[i][j] = new Dirt(i, j, this);
-			if (i >= 30 && i <= 33 && j >= 4 && j < VIEW_HEIGHT - 4)
-				dirt[i][j]->setVisible(false);
-			else
-				dirt[i][j]->setVisible(true);
-		}
-	}
 	b = new Boulder(45, 30, this);
 	b->setVisible(true);
-	for (int i = 0; i < 4; i++)					//removes dirt from whatever position the boulder is at
-		for (int j = 0; j < 4; j++)
-			dirt[45+i][30+j]->setVisible(false);
+	fillDirt();
 	return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -46,24 +35,17 @@ int StudentWorld::move() {
 
 
 void StudentWorld::removeDirt(int x, int y) {
-	if (x < 61 && y < 57)
-		for (int i = x; i < x + 4; i++)
-			for (int j = y; j < y + 4; j++)
-				dirt[i][j]->setVisible(false);
-	else if (x < 61 && y == 57)
-		for (int i = x; i < x + 4; i++)
-			for (int j = y; j < y + 3; j++)
-				dirt[i][j]->setVisible(false);
-	else if (x < 61 && y == 58)
-		for (int i = x; i < x + 4; i++)
-			for (int j = y; j < y + 2; j++)
-				dirt[i][j]->setVisible(false);
-	else if (x < 61 && y == 59)
-		for (int i = x; i < x + 4; i++)
-			for (int j = y; j < y + 1; j++)
-				dirt[i][j]->setVisible(false);
-	else;
+	for (int i = x; i < x + 4; i++) {
+		for (int j = y; j < y + 4; j++) {
+			if (dirt[i][j]) {
+				Dirt* temp = dirt[i][j];
+				dirt[i][j] = nullptr;
+				delete temp;
+			}
+		}
+	}
 }
+
 
 void StudentWorld::HUD() {
 	string HUD =
@@ -80,7 +62,23 @@ int StudentWorld::numOfGoldNuggets() { return min((int)(5 - getLevel()) / 2, 2);
 int StudentWorld::numOfBoulders() { return min((int)(getLevel()) / 4, 7); }
 int StudentWorld::numOfOilBarrels() { return min((int)(2 + getLevel()), 18); }
 
-bool StudentWorld::isThereDirtVisibleHere(int x, int y){ return dirt[x][y]->isVisible(); }
+bool StudentWorld::isThereDirtVisibleHere(int x, int y){
+	if (dirt[x][y])
+		return true;
+	return false;
+}
+
+void StudentWorld::fillDirt(){
+	for (int i = 0; i < VIEW_WIDTH; i++) {
+		for (int j = 0; j < VIEW_HEIGHT; j++) {
+			dirt[i][j] = new Dirt(i, j, this);
+			if ((i >= 30 && i <= 33 && j >= 4) || (j >= VIEW_HEIGHT - 4))
+				dirt[i][j] = nullptr;
+			else
+				dirt[i][j]->setVisible(true);
+		}
+	}
+}
 
 void StudentWorld::cleanUp() {}
 
