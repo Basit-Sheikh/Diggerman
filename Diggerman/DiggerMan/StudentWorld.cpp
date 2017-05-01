@@ -13,6 +13,32 @@ int StudentWorld::init() {
 	oil_barrel = new Barrel(20, 30, this);
 	oil_barrel->setVisible(true);
 	fillDirt();
+
+	//------------------------------------------------
+	//Generating gold nuggets in acceptable situations
+	//-----------------------------------------------
+	/*
+	srand(time(NULL));
+	bool gSpot = false;
+	for (int i = 0; i < numOfGoldNuggets(); i++) {
+		int randX = rand() % 61;
+		int randY = rand() % 57;
+		while (!gSpot) {
+			randX = rand() % 61;
+			randY = rand() % 57;
+			//how do we know it exists at this point
+			if (isThereDirtVisibleHere(randX, randY)) {
+				gSpot = true;
+				if ( !isThereDirtVisibleHere(randX, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY)) {
+					gSpot = false;
+				}
+			}
+		}
+		
+		gold_nuggs.push_back(new PermGoldNugget(this, randX, randY));
+		gold_nuggs[i]->setVisible(true);
+	}
+	*/
 	return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -67,10 +93,29 @@ int StudentWorld::getCurKey() { return currentKey; }
 
 //the following determine how many of each Goodie will be in the current level:
 int StudentWorld::numOfGoldNuggets() { return min((int)(5 - getLevel()) / 2, 2); }
-int StudentWorld::numOfBoulders() { return min((int)(getLevel()) / 4, 7); }
+int StudentWorld::numOfBoulders() { return max((int)(getLevel()) / 4, 7); }
 int StudentWorld::numOfOilBarrels() { return min((int)(2 + getLevel()), 18); }
 
 bool StudentWorld::isThereDirtVisibleHere(int x, int y){ return dirt[x][y]; }
 
 void StudentWorld::cleanUp() {}
+
+/*
+--------------------------------------------
+PLS DONT DELETE---NOTES FOR PERM GOLD NUGGET
+---------------------------------------------
+
+---How to make sure supposed random location has dirt that will cover the nugget
+-get rand x and y values of gold 
+-first check if that random location is ok
+-then generate the four corner x and y values as if it were toe xist there
+-then go through vector(?) of dirts and see if dere is dirt with each of those values
+-if there is, then we know that the location has dirt covering it from all 4 sides
+
+
+----checking distance from all other objects
+
+
+
+*/
 

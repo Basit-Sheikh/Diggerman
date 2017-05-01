@@ -15,7 +15,7 @@ public:
 	StudentWorld* getWorld() const { return world; }
 private:
 	StudentWorld* world;
-	bool isDiggerManNearMe();
+	bool isDiggerManNearMe(int x,int y);
 };
 
 
@@ -95,7 +95,7 @@ public:
 
 	bool DmInVicinity(int x, int y);
 	void GoldPickedUp();
-	virtual void doSomething() {}; //uses the DmInvicinty function to see if DM is in vicinty and then uses GoldPickedUp to indicate that the gold has been found
+	virtual void doSomething(); //uses the DmInvicinty function to see if DM is in vicinty and then uses GoldPickedUp to indicate that the gold has been found
 private:
 	bool found = false;
 };

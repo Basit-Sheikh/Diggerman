@@ -6,7 +6,12 @@
 ACTOR IMPLEMENTATION
 ----------------------------
 */
-bool Actor::isDiggerManNearMe() { return true; }
+bool Actor::isDiggerManNearMe(int x, int y) { 
+	if (sqrt(((x - getX()) ^ 2) + ((y - getY()) ^ 2)) <= 4)
+		return true;
+	
+	return true; 
+}
 /*
 ----------------------------
 DIGGERMAN IMPLEMENTATION
@@ -66,8 +71,30 @@ void TempGoldNugget::doSomething() {
 		setDead();
 }
 //=====Perm Nugget=====
+
 bool PermGoldNugget::DmInVicinity(int x, int y) { return true; }				//pass in the getX and getY from the pointer to the actor
 void PermGoldNugget::GoldPickedUp() { found = true; }							//gold was found
+void PermGoldNugget::doSomething() {
+		if (isAlive()) {
+			if (found == true) {
+				setDead();
+				setVisible(false);
+			}
+
+			else if (!isVisible() && DmInVicinity(getWorld()->dmXlocation(), getWorld()->dmYlocation())) {
+				setVisible(true);
+
+			}
+			//else if (true) {
+			//	//if is radius 3 away from diggerman
+			//	//set to dead or found idk which
+			//	//play sound got goodie
+			//	//increase player score by 10
+			//	//tell diggerman he gota new nugget somehow
+			//}
+		}
+
+	}
 
 
 /*
@@ -98,9 +125,9 @@ void Boulder::doSomething() {
 	case stable:
 		if (!isDirtUnderMe())
 			currentState = waiting;
-		break;
-	case done:
-		break;
+		//break;
+	/*case done:
+		break;*/
 	}
 }
 

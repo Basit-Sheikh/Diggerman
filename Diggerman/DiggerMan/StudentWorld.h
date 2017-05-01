@@ -29,8 +29,12 @@ public:
 	int numOfGoldNuggets();
 	int numOfOilBarrels();
 	bool isThereDirtVisibleHere(int x, int y);
+	int dmXlocation() { return dm->getX(); }
+	int dmYlocation() { return dm->getY(); }
+
 private:
 	int currentKey;
+	vector<Goodies *> gold_nuggs;
 	DiggerMan* dm;
 	Dirt* dirt[64][64];
 	Boulder* b;
