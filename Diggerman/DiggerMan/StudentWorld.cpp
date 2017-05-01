@@ -1,10 +1,7 @@
 #include "StudentWorld.h"
 using namespace std;
 
-GameWorld* createStudentWorld(string assetDir)
-{
-	return new StudentWorld(assetDir);
-}
+GameWorld* createStudentWorld(string assetDir) { return new StudentWorld(assetDir); }
 
 
 int StudentWorld::init() {
@@ -13,6 +10,8 @@ int StudentWorld::init() {
 	dm->setVisible(true);
 	b = new Boulder(45, 30, this);
 	b->setVisible(true);
+	oil_barrel = new Barrel(20, 30, this);
+	oil_barrel->setVisible(true);
 	fillDirt();
 	return GWSTATUS_CONTINUE_GAME;
 }
@@ -28,14 +27,25 @@ int StudentWorld::move() {
 		return GWSTATUS_PLAYER_DIED;
 	}
 	b->doSomething();
+	//oil_barrel->doSomething();
 	dynamic_cast<DiggerMan*>(dm)->doSomething();
 	currentKey = 0;
 	return GWSTATUS_CONTINUE_GAME;
 }
 
-
+void StudentWorld::fillDirt(){
+	for (int i = 0; i < VIEW_WIDTH; i++) {
+		for (int j = 0; j < VIEW_HEIGHT; j++) {
+			dirt[i][j] = new Dirt(i, j, this);
+			if ((i >= 30 && i <= 33 && j >= 4) || (j >= VIEW_HEIGHT - 4))
+				dirt[i][j] = nullptr;
+			else
+				dirt[i][j]->setVisible(true);
+		}
+	}
+}
 void StudentWorld::removeDirt(int x, int y) {
-	for (int i = x; i < x + 4; i++) {
+	for (int i = x; i < x + 4; i++)
 		for (int j = y; j < y + 4; j++) {
 			if (dirt[i][j]) {
 				Dirt* temp = dirt[i][j];
@@ -43,9 +53,7 @@ void StudentWorld::removeDirt(int x, int y) {
 				delete temp;
 			}
 		}
-	}
 }
-
 
 void StudentWorld::HUD() {
 	string HUD =
@@ -62,23 +70,7 @@ int StudentWorld::numOfGoldNuggets() { return min((int)(5 - getLevel()) / 2, 2);
 int StudentWorld::numOfBoulders() { return min((int)(getLevel()) / 4, 7); }
 int StudentWorld::numOfOilBarrels() { return min((int)(2 + getLevel()), 18); }
 
-bool StudentWorld::isThereDirtVisibleHere(int x, int y){
-	if (dirt[x][y])
-		return true;
-	return false;
-}
-
-void StudentWorld::fillDirt(){
-	for (int i = 0; i < VIEW_WIDTH; i++) {
-		for (int j = 0; j < VIEW_HEIGHT; j++) {
-			dirt[i][j] = new Dirt(i, j, this);
-			if ((i >= 30 && i <= 33 && j >= 4) || (j >= VIEW_HEIGHT - 4))
-				dirt[i][j] = nullptr;
-			else
-				dirt[i][j]->setVisible(true);
-		}
-	}
-}
+bool StudentWorld::isThereDirtVisibleHere(int x, int y){ return dirt[x][y]; }
 
 void StudentWorld::cleanUp() {}
 

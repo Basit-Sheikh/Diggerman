@@ -1,20 +1,12 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 
-// Students:  Add code to this file (if you wish), Actor.h, StudentWorld.h, and StudentWorld.cpp
-
-
-
-
-
 /*
 ----------------------------
 ACTOR IMPLEMENTATION
 ----------------------------
 */
-bool Actor::isDiggerManNearMe() {return true;}
-
-
+bool Actor::isDiggerManNearMe() { return true; }
 /*
 ----------------------------
 DIGGERMAN IMPLEMENTATION
@@ -110,15 +102,24 @@ void Boulder::doSomething() {
 	case done:
 		break;
 	}
-
-
 }
 
-bool Boulder::isDirtUnderMe()
-{
-	if (getWorld()->isThereDirtVisibleHere(getX(), getY() - 1) || getWorld()->isThereDirtVisibleHere(getX() + 1 , getY() - 1) ||
-		getWorld()->isThereDirtVisibleHere(getX() + 2, getY() - 1) || getWorld()->isThereDirtVisibleHere(getX() + 3, getY() - 1)) {
-		return true;
-	}
-	return false;
+
+bool Boulder::isDirtUnderMe(){
+	return (getWorld()->isThereDirtVisibleHere(getX(), getY() - 1) || getWorld()->isThereDirtVisibleHere(getX() + 1, getY() - 1) ||
+		getWorld()->isThereDirtVisibleHere(getX() + 2, getY() - 1) || getWorld()->isThereDirtVisibleHere(getX() + 3, getY() - 1)); 
+}
+
+/*
+----------------------------
+BARREL IMPLEMENTATION
+----------------------------
+*/
+
+
+void Barrel::doSomething(){
+	if (!isAlive())
+		return;
+	//if (!this->isVisible())
+		//check if he is within 
 }

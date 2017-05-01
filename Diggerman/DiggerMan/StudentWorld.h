@@ -22,6 +22,7 @@ public:
 	virtual int move();
 	virtual void cleanUp();
 	int getCurKey();
+	void fillDirt();
 	void removeDirt(int x, int y);
 	void HUD();
 	int numOfBoulders();
@@ -33,7 +34,7 @@ private:
 	DiggerMan* dm;
 	Dirt* dirt[64][64];
 	Boulder* b;
-	void fillDirt();
+	Barrel* oil_barrel;
 };
 
 #endif // STUDENTWORLD_H_

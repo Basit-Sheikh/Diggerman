@@ -41,6 +41,7 @@ private:
 class Goodies :public Actor {
 public:
 	Goodies(StudentWorld* sw, const int img, int randX, int randY) :Actor(img, randX, randY, right, 1.0, 2, sw) {};
+	bool isAlive() { return alive; }
 	void setDead() { alive = false; }; //set bool to false
 	virtual void doSomething() {};
 private:
@@ -60,6 +61,14 @@ private:
 
 };
 
+class Barrel : public Goodies{
+public:
+	Barrel(int randX, int randY, StudentWorld* sw) : Goodies(sw, IMID_BARREL, randX, randY){};
+	virtual void doSomething();
+private:
+	
+};
+
 
 class Protester : public Actor {};
 
@@ -67,7 +76,7 @@ class Protester : public Actor {};
 class HardcoreProtester : public Protester {};
 
 
-class TempGoldNugget :public Goodies {
+class TempGoldNugget : public Goodies {
 public:
 	TempGoldNugget(int deathTicks, int randX, int randY, StudentWorld* sw) :Goodies(sw, IMID_GOLD, randX, randY), ticksLeftTillDeath(deathTicks) { this->setVisible(true); };
 	int getTicksLeftTillDeath();
@@ -80,7 +89,7 @@ private:
 };
 
 
-class PermGoldNugget :public Goodies {
+class PermGoldNugget : public Goodies {
 public:
 	PermGoldNugget(StudentWorld* sw, int randX, int randY) :Goodies(sw, IMID_GOLD, randX, randY) {};
 
@@ -90,6 +99,7 @@ public:
 private:
 	bool found = false;
 };
+
 
 
 #endif // ACTOR_H_
