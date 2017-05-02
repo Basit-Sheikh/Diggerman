@@ -39,6 +39,7 @@ private:
 	Dirt* dirt[64][64];
 	Boulder* b;
 	Barrel* oil_barrel;
+	Protester* p;
 };
 
 #endif // STUDENTWORLD_H_

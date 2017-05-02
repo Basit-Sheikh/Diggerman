@@ -13,7 +13,8 @@ int StudentWorld::init() {
 	oil_barrel = new Barrel(20, 30, this);
 	oil_barrel->setVisible(true);
 	fillDirt();
-
+	p = new Protester(this);
+	p->setVisible(true);
 	//------------------------------------------------
 	//Generating gold nuggets in acceptable situations
 	//-----------------------------------------------

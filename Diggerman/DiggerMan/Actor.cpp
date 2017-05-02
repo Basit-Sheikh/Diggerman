@@ -1,6 +1,6 @@
 #include "Actor.h"
 #include "StudentWorld.h"
-
+#include <algorithm>
 /*
 ----------------------------
 ACTOR IMPLEMENTATION
@@ -12,19 +12,22 @@ bool Actor::isDiggerManNearMe(int x, int y) {
 	
 	return true; 
 }
+bool Actor::isDirtUnderMe(){
+	return (getWorld()->isThereDirtVisibleHere(getX(), getY() - 1) || getWorld()->isThereDirtVisibleHere(getX() + 1, getY() - 1) ||
+		getWorld()->isThereDirtVisibleHere(getX() + 2, getY() - 1) || getWorld()->isThereDirtVisibleHere(getX() + 3, getY() - 1)); 
+}
+
 /*
 ----------------------------
-DIGGERMAN IMPLEMENTATION
+DIGGERMAN IMPLEMENTATION 
 ----------------------------
 */
-
 void DiggerMan::doSomething() {
 	if (getWorld()->getLives() > 0) {
 		moveDiggerMan();
 		clearDirt();
 	}
 }
-
 void DiggerMan::moveDiggerMan() {
 	int dir = getWorld()->getCurKey();
 	switch (dir) {
@@ -55,20 +58,55 @@ void DiggerMan::moveDiggerMan() {
 	}
 }
 void DiggerMan::clearDirt() { getWorld()->removeDirt(getX(), getY()); }
-int DiggerMan::getHealth() { return health; }
+/*
+----------------------------
+PROTESTER IMPLEMENTATION 
+----------------------------
+*/
+void Protester::doSomething() {
+	if (isAlive()) {
+		//rest, move, annoyed, follow, start
+		switch (currentState) {
+		case start:		//init state
+			break;
+		case move:		//randomly moving state
+			break;
+		case annoyed:   //annoyed state, goBackToSafeSpace()
+			break;
+		case follow:    //following diggerman
+			break;
+		case rest:		//resting state, either between ticks, or when annoyed
+			break;
 
+		}
+	}
+}
+int Protester::getTicksBetweenMoveCount(){return max(0, 3 - (int)getWorld()->getLevel() / 4);}
+bool Protester::isDirtAboveMe() {
+	return (getWorld()->isThereDirtVisibleHere(getX(), getY() + 1) || getWorld()->isThereDirtVisibleHere(getX() + 1, getY() + 1) ||
+		getWorld()->isThereDirtVisibleHere(getX() + 2, getY() + 1) || getWorld()->isThereDirtVisibleHere(getX() + 3, getY() + 1));
+}
+bool Protester::isDirtLeftOfMe() {
+	return (getWorld()->isThereDirtVisibleHere(getX() - 1, getY()) || getWorld()->isThereDirtVisibleHere(getX() - 1, getY() + 1) ||
+		getWorld()->isThereDirtVisibleHere(getX() - 1, getY() + 2) || getWorld()->isThereDirtVisibleHere(getX() - 1, getY() + 3));
+}
+bool Protester::isDirtRightOfMe() {
+	return (getWorld()->isThereDirtVisibleHere(getX() + 1, getY()) || getWorld()->isThereDirtVisibleHere(getX() + 1, getY() + 1) ||
+		getWorld()->isThereDirtVisibleHere(getX() + 1, getY() + 2) || getWorld()->isThereDirtVisibleHere(getX() + 1, getY() + 3));
+}
 /*
 ----------------------------
 NUGGET IMPLEMENTATION
 ----------------------------
 */
 
+
 //=====Temp Nugget=====
 int TempGoldNugget::getTicksLeftTillDeath() { return ticksLeftTillDeath; }		//returns how many ticks i have till this object dies
 void TempGoldNugget::decreaseLifeTicks() { ticksLeftTillDeath--; }				//decreases their ticks by one
 void TempGoldNugget::doSomething() {
 	if (getTicksLeftTillDeath() == 0)
-		setDead();
+		kill();
 }
 //=====Perm Nugget=====
 
@@ -77,7 +115,7 @@ void PermGoldNugget::GoldPickedUp() { found = true; }							//gold was found
 void PermGoldNugget::doSomething() {
 		if (isAlive()) {
 			if (found == true) {
-				setDead();
+				kill();
 				setVisible(false);
 			}
 
@@ -125,17 +163,12 @@ void Boulder::doSomething() {
 	case stable:
 		if (!isDirtUnderMe())
 			currentState = waiting;
-		//break;
-	/*case done:
-		break;*/
+		break;
 	}
 }
 
 
-bool Boulder::isDirtUnderMe(){
-	return (getWorld()->isThereDirtVisibleHere(getX(), getY() - 1) || getWorld()->isThereDirtVisibleHere(getX() + 1, getY() - 1) ||
-		getWorld()->isThereDirtVisibleHere(getX() + 2, getY() - 1) || getWorld()->isThereDirtVisibleHere(getX() + 3, getY() - 1)); 
-}
+
 
 /*
 ----------------------------
@@ -150,3 +183,5 @@ void Barrel::doSomething(){
 	//if (!this->isVisible())
 		//check if he is within 
 }
+
+
