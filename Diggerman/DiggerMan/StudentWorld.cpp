@@ -54,6 +54,7 @@ int StudentWorld::move() {
 		return GWSTATUS_PLAYER_DIED;
 	}
 	b->doSomething();
+	p->doSomething();
 	//oil_barrel->doSomething();
 	dynamic_cast<DiggerMan*>(dm)->doSomething();
 	currentKey = 0;

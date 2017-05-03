@@ -1,6 +1,7 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 #include <algorithm>
+
 /*
 ----------------------------
 ACTOR IMPLEMENTATION
@@ -68,31 +69,69 @@ void Protester::doSomething() {
 		//rest, move, annoyed, follow, start
 		switch (currentState) {
 		case start:		//init state
+			moveCount = getRandomDirMoveTickCount();
+			waitCount = getTicksBetweenMoveCount();
+			moveTo(getX() - 1, getY());
+			currentState = rest;
 			break;
 		case move:		//randomly moving state
+			//moveProtester is a helper function for do something
+			//just moves protester, moved to func for readablility of doSomething()
+			moveProtester();
 			break;
 		case annoyed:   //annoyed state, goBackToSafeSpace()
 			break;
 		case follow:    //following diggerman
 			break;
 		case rest:		//resting state, either between ticks, or when annoyed
+			if (waitCount < 1)
+				currentState = move;
+			waitCount--;
+
 			break;
 
 		}
 	}
 }
 int Protester::getTicksBetweenMoveCount(){return max(0, 3 - (int)getWorld()->getLevel() / 4);}
+int Protester::getRandomDirMoveTickCount(){return (rand() % 52) + 8;}
 bool Protester::isDirtAboveMe() {
-	return (getWorld()->isThereDirtVisibleHere(getX(), getY() + 1) || getWorld()->isThereDirtVisibleHere(getX() + 1, getY() + 1) ||
-		getWorld()->isThereDirtVisibleHere(getX() + 2, getY() + 1) || getWorld()->isThereDirtVisibleHere(getX() + 3, getY() + 1));
+	return (getWorld()->isThereDirtVisibleHere(getX(), getY() + 4) || getWorld()->isThereDirtVisibleHere(getX() + 1, getY() + 4) ||
+		getWorld()->isThereDirtVisibleHere(getX() + 2, getY() + 4) || getWorld()->isThereDirtVisibleHere(getX() + 3, getY() + 4));
 }
 bool Protester::isDirtLeftOfMe() {
 	return (getWorld()->isThereDirtVisibleHere(getX() - 1, getY()) || getWorld()->isThereDirtVisibleHere(getX() - 1, getY() + 1) ||
 		getWorld()->isThereDirtVisibleHere(getX() - 1, getY() + 2) || getWorld()->isThereDirtVisibleHere(getX() - 1, getY() + 3));
 }
 bool Protester::isDirtRightOfMe() {
-	return (getWorld()->isThereDirtVisibleHere(getX() + 1, getY()) || getWorld()->isThereDirtVisibleHere(getX() + 1, getY() + 1) ||
-		getWorld()->isThereDirtVisibleHere(getX() + 1, getY() + 2) || getWorld()->isThereDirtVisibleHere(getX() + 1, getY() + 3));
+	return (getWorld()->isThereDirtVisibleHere(getX() + 4, getY()) || getWorld()->isThereDirtVisibleHere(getX() + 4, getY() + 1) ||
+		getWorld()->isThereDirtVisibleHere(getX() + 4, getY() + 2) || getWorld()->isThereDirtVisibleHere(getX() + 4, getY() + 3));
+}
+void Protester::protesterMoveHelper(int x, int y){
+	moveTo(getX() + x, getY() + y);
+	moveCount--;
+}
+void Protester::moveProtester(){
+	if (waitCount < 1 && moveCount > 0) {
+		if (getDirection() == left && getX() > 0 && !isDirtLeftOfMe())
+			protesterMoveHelper(-1, 0);
+		else if (getDirection() == right && getX() < VIEW_WIDTH && !isDirtRightOfMe())
+			protesterMoveHelper(1, 0);
+		else if (getDirection() == down && getY() > 0 && !isDirtUnderMe())
+			protesterMoveHelper(0, -1);
+		else if (getDirection() == up && getY() < VIEW_HEIGHT - 4 && !isDirtAboveMe())
+			protesterMoveHelper(0, 1);
+		else {
+			setDirection(pickRandomDirection());
+			moveCount = getRandomDirMoveTickCount();
+		}
+		currentState = rest;
+		waitCount = getTicksBetweenMoveCount();
+	}
+	else {
+		setDirection(pickRandomDirection());
+		moveCount = getRandomDirMoveTickCount();
+	}
 }
 /*
 ----------------------------

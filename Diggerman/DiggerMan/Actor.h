@@ -25,7 +25,8 @@ private:
 
 class Character : public Actor {
 public:
-	Character(int id, int x, int y, StudentWorld* sw, Direction dir, double size, int dep, int hp) : Actor(id, x, y, dir, size, dep, sw), health(hp) {}
+	Character(int id, int x, int y, StudentWorld* sw, Direction dir, double size, int dep, int hp) : 
+		Actor(id, x, y, dir, size, dep, sw), health(hp) {}
 	int getHealth() const { return health; }
 	void decHealth(int subAm) { health -= subAm; }
 private:
@@ -35,7 +36,8 @@ private:
 
 class DiggerMan : public Character {
 public:
-	DiggerMan(StudentWorld* sw) : Character(IMID_PLAYER, 30, 60, sw, right, 1.0, 0, 10) {};
+	DiggerMan(StudentWorld* sw) : 
+		Character(IMID_PLAYER, 30, 60, sw, right, 1.0, 0, 10) {};
 	virtual void doSomething();
 private:
 	void moveDiggerMan();
@@ -48,15 +50,31 @@ protected:
 	bool isDirtAboveMe();
 	bool isDirtLeftOfMe();
 	bool isDirtRightOfMe();
+
 public:
-	Protester(StudentWorld * sw) : Character(IMID_PROTESTER, 60, 60, sw, left, 1.0, 0, 5), currentState(start), restCount(0), moveCount(0), waitCount(0) {}
+	Protester(StudentWorld * sw) : 
+		Character(IMID_PROTESTER, 60, 60, sw, left, 1.0, 0, 5), currentState(start), moveCount(0), waitCount(0) {}
 	virtual void doSomething();
-	int getTicksBetweenMoveCount();	
+	int getTicksBetweenMoveCount();
+	int getRandomDirMoveTickCount();
 private:
 	State currentState;
-	int restCount;
 	int moveCount;
 	int waitCount;
+	Direction pickRandomDirection() {
+		int i = rand() % 4;
+		if (i == 0)
+			return left;
+		if (i == 1)
+			return right;
+		if (i == 2)
+			return down;
+		if (i == 3)
+			return up;
+		return none;
+	}
+    void protesterMoveHelper(int x, int y);
+	void moveProtester();
 };
 
 
@@ -68,13 +86,15 @@ private:
 
 class Dirt : public Actor {
 public:
-	Dirt(int startX, int startY, StudentWorld* sw) : Actor(IMID_DIRT, startX, startY, right, .25, 3, sw) {};
+	Dirt(int startX, int startY, StudentWorld* sw) :
+		Actor(IMID_DIRT, startX, startY, right, .25, 3, sw) {};
 	virtual void doSomething() {};
 };
 
 class Goodies :public Actor {
 public:
-	Goodies(StudentWorld* sw, const int img, int randX, int randY) :Actor(img, randX, randY, right, 1.0, 2, sw) {};
+	Goodies(StudentWorld* sw, const int img, int randX, int randY) :
+		Actor(img, randX, randY, right, 1.0, 2, sw) {};
 
 	virtual void doSomething() {};
 private:
@@ -84,7 +104,8 @@ private:
 
 class Boulder : public Actor {
 public:
-	Boulder(int x, int y, StudentWorld* sw) : Actor(IMID_BOULDER, x, y, down, 1.0, 1, sw), currentState(stable), tickCount(0){ };
+	Boulder(int x, int y, StudentWorld* sw) : 
+		Actor(IMID_BOULDER, x, y, down, 1.0, 1, sw), currentState(stable), tickCount(0){ };
 	virtual void doSomething();
 private:
 	enum State { stable, falling, waiting, done };
@@ -95,7 +116,8 @@ private:
 
 class Barrel : public Goodies{
 public:
-	Barrel(int randX, int randY, StudentWorld* sw) : Goodies(sw, IMID_BARREL, randX, randY){};
+	Barrel(int randX, int randY, StudentWorld* sw) : 
+		Goodies(sw, IMID_BARREL, randX, randY){};
 	virtual void doSomething();
 private:
 	
@@ -104,7 +126,8 @@ private:
 
 class TempGoldNugget : public Goodies {
 public:
-	TempGoldNugget(int deathTicks, int randX, int randY, StudentWorld* sw) :Goodies(sw, IMID_GOLD, randX, randY), ticksLeftTillDeath(deathTicks) { this->setVisible(true); };
+	TempGoldNugget(int deathTicks, int randX, int randY, StudentWorld* sw) :
+		Goodies(sw, IMID_GOLD, randX, randY), ticksLeftTillDeath(deathTicks) { this->setVisible(true); };
 	int getTicksLeftTillDeath();
 	void decreaseLifeTicks();
 	virtual void doSomething();
@@ -117,7 +140,8 @@ private:
 
 class PermGoldNugget : public Goodies {
 public:
-	PermGoldNugget(StudentWorld* sw, int randX, int randY) :Goodies(sw, IMID_GOLD, randX, randY) {};
+	PermGoldNugget(StudentWorld* sw, int randX, int randY) :
+		Goodies(sw, IMID_GOLD, randX, randY) {};
 
 	bool DmInVicinity(int x, int y);
 	void GoldPickedUp();
