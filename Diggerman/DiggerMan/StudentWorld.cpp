@@ -8,38 +8,12 @@ int StudentWorld::init() {
 	currentKey = -1;
 	dm = new DiggerMan(this);
 	dm->setVisible(true);
-	b = new Boulder(45, 30, this);
-	b->setVisible(true);
-	oil_barrel = new Barrel(20, 30, this);
-	oil_barrel->setVisible(true);
 	fillDirt();
 	p = new Protester(this);
 	p->setVisible(true);
-	//------------------------------------------------
-	//Generating gold nuggets in acceptable situations
-	//-----------------------------------------------
-	/*
-	srand(time(NULL));
-	bool gSpot = false;
-	for (int i = 0; i < numOfGoldNuggets(); i++) {
-		int randX = rand() % 61;
-		int randY = rand() % 57;
-		while (!gSpot) {
-			randX = rand() % 61;
-			randY = rand() % 57;
-			//how do we know it exists at this point
-			if (isThereDirtVisibleHere(randX, randY)) {
-				gSpot = true;
-				if ( !isThereDirtVisibleHere(randX, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY)) {
-					gSpot = false;
-				}
-			}
-		}
-		
-		gold_nuggs.push_back(new PermGoldNugget(this, randX, randY));
-		gold_nuggs[i]->setVisible(true);
-	}
-	*/
+	generateField("PermNugget");
+	generateField("Barrel");	
+	generateField("Boulder");
 	return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -53,14 +27,18 @@ int StudentWorld::move() {
 		decLives();
 		return GWSTATUS_PLAYER_DIED;
 	}
-	b->doSomething();
-	p->doSomething();
-	//oil_barrel->doSomething();
 	dynamic_cast<DiggerMan*>(dm)->doSomething();
+	p->doSomething();
+	for (Actor* a : actors)
+		a->doSomething();
 	currentKey = 0;
 	return GWSTATUS_CONTINUE_GAME;
 }
 
+bool StudentWorld::DMinVicinity(int range, Actor *a) {
+	double dist = sqrt(pow(dm->getX() - a->getX(), 2) + pow(dm->getY() - a->getY(), 2));
+	return dist <= range;
+}
 void StudentWorld::fillDirt(){
 	for (int i = 0; i < VIEW_WIDTH; i++) {
 		for (int j = 0; j < VIEW_HEIGHT; j++) {
@@ -83,6 +61,53 @@ void StudentWorld::removeDirt(int x, int y) {
 		}
 }
 
+void StudentWorld::generateField(string type){
+	int spawn_amount;
+	if      (type == "PermNugget") spawn_amount = numOfGoldNuggets();
+	else if (type == "Barrel")     spawn_amount = numOfOilBarrels();
+	else if (type == "Boulder")    spawn_amount = numOfBoulders();
+
+
+	//------------------------------------------------
+	//Generating items in acceptable situations
+	//-----------------------------------------------
+	bool gSpot = false;
+	for (int i = 0; i < spawn_amount; i++) {
+		int randX = rand() % 61;
+		int randY = rand() % 57;
+		while (randY > 0 && randX > 26 && randX < 34){
+			randX = rand() % 61;
+			randY = rand() % 57;
+		}
+		for (Actor* a : actors) {
+			while (sqrt(pow(randX - a->getX(), 2) + pow(randY - a->getY(), 2)) < 7) {  //6 unit space between each spawned object
+				randX = rand() % 61;
+				randY = rand() % 57;
+			}
+		}
+		while (!gSpot) {
+			//how do we know it exists at this point
+			if (isThereDirtVisibleHere(randX, randY)) {
+				gSpot = true;
+				if (!isThereDirtVisibleHere(randX, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY)) { gSpot = false; }
+			}
+		}
+		if (type == "PermNugget") {
+			actors.push_back(new PermGoldNugget(this, randX, randY)); 
+			actors.back()->setVisible(false);
+		} 
+		else if (type == "Barrel") {
+			actors.push_back(new Barrel(randX, randY, this)); 
+			actors.back()->setVisible(false);
+		}		
+		else if (type == "Boulder") {
+			actors.push_back(new Boulder(randX, randY, this));
+			removeDirt(randX, randY);                          //remove dirt from where the boulder spawns
+			actors.back()->setVisible(true);
+		}
+	}
+}
+
 void StudentWorld::HUD() {
 	string HUD =
 		"Lvl: " + to_string(getLevel()) + " " +
@@ -94,8 +119,8 @@ void StudentWorld::HUD() {
 int StudentWorld::getCurKey() { return currentKey; }
 
 //the following determine how many of each Goodie will be in the current level:
-int StudentWorld::numOfGoldNuggets() { return min((int)(5 - getLevel()) / 2, 2); }
-int StudentWorld::numOfBoulders() { return max((int)(getLevel()) / 4, 7); }
+int StudentWorld::numOfGoldNuggets() { return max((int)(5 - getLevel()) / 2, 2); }
+int StudentWorld::numOfBoulders() { return min((int)(getLevel()) / 2 + 2, 7); }
 int StudentWorld::numOfOilBarrels() { return min((int)(2 + getLevel()), 18); }
 
 bool StudentWorld::isThereDirtVisibleHere(int x, int y){ return dirt[x][y]; }

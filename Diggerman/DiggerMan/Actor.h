@@ -143,9 +143,8 @@ public:
 	PermGoldNugget(StudentWorld* sw, int randX, int randY) :
 		Goodies(sw, IMID_GOLD, randX, randY) {};
 
-	bool DmInVicinity(int x, int y);
 	void GoldPickedUp();
-	virtual void doSomething(); //uses the DmInvicinty function to see if DM is in vicinty and then uses GoldPickedUp to indicate that the gold has been found
+	virtual void doSomething();
 private:
 	bool found = false;
 };

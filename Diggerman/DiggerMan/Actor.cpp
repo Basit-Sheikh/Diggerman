@@ -149,19 +149,18 @@ void TempGoldNugget::doSomething() {
 }
 //=====Perm Nugget=====
 
-bool PermGoldNugget::DmInVicinity(int x, int y) { return true; }				//pass in the getX and getY from the pointer to the actor
 void PermGoldNugget::GoldPickedUp() { found = true; }							//gold was found
 void PermGoldNugget::doSomething() {
-		if (isAlive()) {
-			if (found == true) {
-				kill();
-				setVisible(false);
-			}
+	if (!isAlive())
+		return;
+	if (getWorld()->DMinVicinity(4, this)) {
+		this->setVisible(true);
+	}
+	if (found == true) {
+		setVisible(false);
+		kill();
+	}
 
-			else if (!isVisible() && DmInVicinity(getWorld()->dmXlocation(), getWorld()->dmYlocation())) {
-				setVisible(true);
-
-			}
 			//else if (true) {
 			//	//if is radius 3 away from diggerman
 			//	//set to dead or found idk which
@@ -169,8 +168,6 @@ void PermGoldNugget::doSomething() {
 			//	//increase player score by 10
 			//	//tell diggerman he gota new nugget somehow
 			//}
-		}
-
 	}
 
 
@@ -207,18 +204,18 @@ void Boulder::doSomething() {
 }
 
 
-
-
 /*
 ----------------------------
 BARREL IMPLEMENTATION
 ----------------------------
 */
 
-
 void Barrel::doSomething(){
 	if (!isAlive())
 		return;
+	if (getWorld()->DMinVicinity(4, this)) {
+		this->setVisible(true);
+	}
 	//if (!this->isVisible())
 		//check if he is within 
 }

@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <iterator>
+#include <cmath>
 using namespace std;
 
 class StudentWorld : public GameWorld
@@ -29,16 +31,16 @@ public:
 	int numOfGoldNuggets();
 	int numOfOilBarrels();
 	bool isThereDirtVisibleHere(int x, int y);
+	bool DMinVicinity(int range, Actor *a);
 	int dmXlocation() { return dm->getX(); }
 	int dmYlocation() { return dm->getY(); }
+	void generateField(string type);
 
 private:
 	int currentKey;
-	vector<Goodies *> gold_nuggs;
+	vector<Actor *> actors;
 	DiggerMan* dm;
 	Dirt* dirt[64][64];
-	Boulder* b;
-	Barrel* oil_barrel;
 	Protester* p;
 };
 
