@@ -228,4 +228,32 @@ void Barrel::doSomething(){
 	}
 }
 
+/*
+----------------------------
+SONAR KIT IMPLEMENTATION
+----------------------------
+*/
+
+void Sonar::doSomething() {
+	if (!isAlive())
+		return;
+	if (getWorld()->DMinVicinity(3, this)) {
+		getWorld()->playSound(SOUND_GOT_GOODIE);
+		getWorld()->increaseScore(75);
+		this->setVisible(false);
+		this->kill();
+		//original sonar kit has been destroyed here, 
+		//now we must create a new kit in dm's inventory (to be implemented)
+		//when he presses z, it should activate the sonar field (to be implemented)
+	}
+	else if (current_ticks() == 0) {
+		this->setVisible(false);
+		this->kill();
+	}
+	decrement_tick();
+}
+
+int Sonar::current_ticks() { return ticks; }
+void Sonar::decrement_tick() { if (ticks > 0) ticks--; }
+
 

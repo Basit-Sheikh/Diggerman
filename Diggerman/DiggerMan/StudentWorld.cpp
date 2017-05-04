@@ -11,6 +11,9 @@ int StudentWorld::init() {
 	fillDirt();
 	p = new Protester(this);
 	p->setVisible(true);
+
+	actors.push_back(new Sonar(5, 55, this));
+	actors.back()->setVisible(true);
 	generateField("Barrel");
 	generateField("PermNugget");
 	generateField("Boulder");
@@ -29,17 +32,11 @@ int StudentWorld::move() {
 	}
 	dynamic_cast<DiggerMan*>(dm)->doSomething();
 	p->doSomething();
+	//sonarkit->doSomething();
 	for (Actor* a : actors){
 		if (a->isAlive()) 
 			a->doSomething();
 	}
-	//for (Actor* a : actors) {
-	//	if (a->isAlive() == false)
-	//	{
-	//		
-
-	//	}
-	//}
 	for (int i = 0; i < actors.size(); i++) {
 		if (!actors[i]->isAlive()) {
 			delete actors[i];
@@ -47,7 +44,6 @@ int StudentWorld::move() {
 		}	
 		cout << "SIZE: " << actors.size() << endl;
 	}
-
 
 	currentKey = 0;
 	return GWSTATUS_CONTINUE_GAME;
@@ -171,6 +167,7 @@ int StudentWorld::getCurKey() { return currentKey; }
 int StudentWorld::numOfGoldNuggets() { return max((int)(5 - getLevel()) / 2, 2); }
 int StudentWorld::numOfBoulders() { return min((int)(getLevel()) / 2 + 2, 7); }
 int StudentWorld::numOfOilBarrels() { return min((int)(2 + getLevel()), 18); }
+int StudentWorld::numOfSonarTicks() { return max(100, int(300-(10*getLevel()))); } //returns how many ticks until sonar kit disappears/expires
 
 bool StudentWorld::isThereDirtVisibleHere(int x, int y){ return dirt[x][y]; }
 

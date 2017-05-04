@@ -123,6 +123,18 @@ private:
 	
 };
 
+class Sonar : public Goodies {
+public:
+	Sonar(int randX, int randY, StudentWorld* sw) :
+		Goodies(sw, IMID_SONAR, randX, randY) {};
+	virtual void doSomething();
+	int  current_ticks();
+	void decrement_tick();
+private:
+	int ticks;
+};
+
+
 
 class TempGoldNugget : public Goodies {
 public:
@@ -148,6 +160,7 @@ public:
 private:
 	bool found = false;
 };
+
 
 
 
