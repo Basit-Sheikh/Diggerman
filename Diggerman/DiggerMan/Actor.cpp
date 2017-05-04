@@ -26,6 +26,7 @@ DIGGERMAN IMPLEMENTATION
 void DiggerMan::doSomething() {
 	if (getWorld()->getLives() > 0) {
 		moveDiggerMan();
+		//cout << getX() << " " << getY() << endl;         <--- good test to see diggermans position when testing ranges
 		clearDirt();
 	}
 }
@@ -156,16 +157,19 @@ void PermGoldNugget::doSomething() {
 	if (getWorld()->DMinVicinity(4, this)) {
 		this->setVisible(true);
 	}
-	if (found == true) {
-		setVisible(false);
-		kill();
+	if (getWorld()->DMinVicinity(3, this)) {
+		getWorld()->playSound(SOUND_GOT_GOODIE);
+		getWorld()->increaseScore(10);
+		this->setVisible(false);
+		found = true;
+		this->kill();
 	}
 
 			//else if (true) {
-			//	//if is radius 3 away from diggerman
-			//	//set to dead or found idk which
-			//	//play sound got goodie
-			//	//increase player score by 10
+			//	//if is radius 3 away from diggerman		 --done
+			//	//set to dead or found idk which			 --done
+			//	//play sound got goodie						 --done
+			//	//increase player score by 10                --done
 			//	//tell diggerman he gota new nugget somehow
 			//}
 	}
@@ -183,7 +187,8 @@ void Boulder::doSomething() {
 			moveTo(getX(), getY() - 1);
 		else {
 			currentState = done;
-			setVisible(false);
+			this->setVisible(false);
+			this->kill();
 			getWorld()->playSound(SOUND_NONE);
 		}
 		break;
@@ -203,7 +208,6 @@ void Boulder::doSomething() {
 	}
 }
 
-
 /*
 ----------------------------
 BARREL IMPLEMENTATION
@@ -216,8 +220,12 @@ void Barrel::doSomething(){
 	if (getWorld()->DMinVicinity(4, this)) {
 		this->setVisible(true);
 	}
-	//if (!this->isVisible())
-		//check if he is within 
+	if (getWorld()->DMinVicinity(3, this)) {
+		getWorld()->playSound(SOUND_FOUND_OIL);
+		getWorld()->increaseScore(1000);
+		this->setVisible(false);
+		this->kill();
+	}
 }
 
 

@@ -35,7 +35,10 @@ public:
 	int dmXlocation() { return dm->getX(); }
 	int dmYlocation() { return dm->getY(); }
 	void generateField(string type);
-
+	int StudentWorld::randYGenerator(string type);
+	int StudentWorld::randXGenerator();
+	bool StudentWorld::goodSpot(int randX, int randY);
+	bool StudentWorld::farAway(int x, int y);
 private:
 	int currentKey;
 	vector<Actor *> actors;

@@ -11,8 +11,8 @@ int StudentWorld::init() {
 	fillDirt();
 	p = new Protester(this);
 	p->setVisible(true);
+	generateField("Barrel");
 	generateField("PermNugget");
-	generateField("Barrel");	
 	generateField("Boulder");
 	return GWSTATUS_CONTINUE_GAME;
 }
@@ -29,8 +29,26 @@ int StudentWorld::move() {
 	}
 	dynamic_cast<DiggerMan*>(dm)->doSomething();
 	p->doSomething();
-	for (Actor* a : actors)
-		a->doSomething();
+	for (Actor* a : actors){
+		if (a->isAlive()) 
+			a->doSomething();
+	}
+	//for (Actor* a : actors) {
+	//	if (a->isAlive() == false)
+	//	{
+	//		
+
+	//	}
+	//}
+	for (int i = 0; i < actors.size(); i++) {
+		if (!actors[i]->isAlive()) {
+			delete actors[i];
+			actors.erase(actors.begin() + i);
+		}	
+		cout << "SIZE: " << actors.size() << endl;
+	}
+
+
 	currentKey = 0;
 	return GWSTATUS_CONTINUE_GAME;
 }
@@ -60,7 +78,41 @@ void StudentWorld::removeDirt(int x, int y) {
 			}
 		}
 }
+int StudentWorld::randXGenerator() {
+	int x = rand() % 61;
+	while (x > 26 && x < 34)
+		x = rand() % 61;
+	return x;
+}
+int StudentWorld::randYGenerator(string type) {
+	int y = rand() % 57;
+	if (type == "Boulder") { //boulders must spawn between y = 20 and y = 56
+		while (y < 20 || y > 56) {
+			y = rand() % 57;
+		}
 
+	}
+	return y;
+}
+bool StudentWorld::goodSpot(int randX,int randY) {
+		
+		if (isThereDirtVisibleHere(randX, randY)) {
+			if (!isThereDirtVisibleHere(randX, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY)) {
+				return false;
+			}
+			return true;
+		}
+		return false;
+	
+}
+bool StudentWorld::farAway(int x,int y) {
+	for (Actor* a : actors) {
+		if( (sqrt(pow(x - a->getX(), 2) + pow(y - a->getY(), 2))) < 7) {  //6 unit space between each spawned object
+			return false;
+		}
+	}
+	return true;
+}
 void StudentWorld::generateField(string type){
 	int spawn_amount;
 	if      (type == "PermNugget") spawn_amount = numOfGoldNuggets();
@@ -71,27 +123,24 @@ void StudentWorld::generateField(string type){
 	//------------------------------------------------
 	//Generating items in acceptable situations
 	//-----------------------------------------------
-	bool gSpot = false;
 	for (int i = 0; i < spawn_amount; i++) {
-		int randX = rand() % 61;
-		int randY = rand() % 57;
-		while (randY > 0 && randX > 26 && randX < 34){
-			randX = rand() % 61;
-			randY = rand() % 57;
-		}
-		for (Actor* a : actors) {
-			while (sqrt(pow(randX - a->getX(), 2) + pow(randY - a->getY(), 2)) < 7) {  //6 unit space between each spawned object
-				randX = rand() % 61;
-				randY = rand() % 57;
+		int randX = randXGenerator();
+		int randY = randYGenerator(type);
+		int ct = 0;
+		while (true) {
+			if (ct > 200) {
+				if (goodSpot(randX, randY))
+					break;
 			}
-		}
-		while (!gSpot) {
-			//how do we know it exists at this point
-			if (isThereDirtVisibleHere(randX, randY)) {
-				gSpot = true;
-				if (!isThereDirtVisibleHere(randX, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY)) { gSpot = false; }
+			if (goodSpot(randX, randY)) {
+				if (farAway(randX, randY))
+					break;
 			}
+			randX = randXGenerator();
+			randY = randYGenerator(type);
+			ct++;
 		}
+		
 		if (type == "PermNugget") {
 			actors.push_back(new PermGoldNugget(this, randX, randY)); 
 			actors.back()->setVisible(false);
@@ -112,7 +161,7 @@ void StudentWorld::HUD() {
 	string HUD =
 		"Lvl: " + to_string(getLevel()) + " " +
 		"Lives: " + to_string(getLives()) + " " +
-		"Hlth: " + to_string(dm->getHealth() * 100) + "% " +
+		"Hlth: " + to_string(dm->getHealth() * 10) + "% " +
 		"Scr: " + to_string(getScore()) + " ";
 	setGameStatText(HUD);
 }
