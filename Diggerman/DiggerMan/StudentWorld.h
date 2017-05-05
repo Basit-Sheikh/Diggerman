@@ -15,37 +15,40 @@ using namespace std;
 class StudentWorld : public GameWorld
 {
 public:
-	StudentWorld(std::string assetDir)
-		: GameWorld(assetDir)
-	{
-
-	}
-	virtual int init();
-	virtual int move();
-	virtual void cleanUp();
-	int getCurKey();
-	void fillDirt();
-	void removeDirt(int x, int y);
-	void HUD();
-	int numOfBoulders();
-	int numOfGoldNuggets();
-	int numOfOilBarrels();
-	int numOfSonarTicks();
-	bool isThereDirtVisibleHere(int x, int y);
-	bool DMinVicinity(int range, Actor *a);
-	int dmXlocation() { return dm->getX(); }
-	int dmYlocation() { return dm->getY(); }
-	void generateField(string type);
-	int randYGenerator(string type);
-	int randXGenerator();
-	bool goodSpot(int randX, int randY);
-	bool farAway(int x, int y);
+    StudentWorld(std::string assetDir)
+    : GameWorld(assetDir)
+    {
+        
+    }
+    virtual int init();
+    virtual int move();
+    virtual void cleanUp();
+    int getCurKey();
+    void fillDirt();
+    void removeDirt(int x, int y);
+    void HUD();
+    int numOfBoulders();
+    int numOfGoldNuggets();
+    int numOfOilBarrels();
+    int numOfSonarTicks();
+    bool isThereDirtVisibleHere(int x, int y);
+    bool DMinVicinity(int range, Actor *a);
+    int dmXlocation() { return dm->getX(); }
+    int dmYlocation() { return dm->getY(); }
+    void generateField(string type);
+    int randYGenerator(string type);
+    int randXGenerator();
+    bool goodSpot(int randX, int randY);
+    bool farAway(int x, int y);
+    int numOfGoldBait = 0;
+    void dropaNugg();
+    
 private:
-	int currentKey;
-	vector<Actor *> actors;
-	DiggerMan* dm;
-	Dirt* dirt[64][64];
-	Protester* p;
+    int currentKey;
+    vector<Actor *> actors;
+    DiggerMan* dm;
+    Dirt* dirt[64][64];
+    Protester* p;
 };
 
 #endif // STUDENTWORLD_H_
