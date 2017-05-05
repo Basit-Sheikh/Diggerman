@@ -32,7 +32,7 @@ public:
 	int numOfOilBarrels();
 	int numOfSonarTicks();
 	bool isThereDirtVisibleHere(int x, int y);
-	bool DMinVicinity(int range, Actor *a);
+	bool DMinVicinity(int range, int x, int y);
 	int dmXlocation() { return dm->getX(); }
 	int dmYlocation() { return dm->getY(); }
 	void generateField(string type);
@@ -48,6 +48,13 @@ public:
 	void incrementSonarKit();
 	int numOfSonarKits();
 	void sonarBLAST();
+	bool isDirtAboveMe(int x, int y, int z);
+	bool isDirtLeftOfMe(int x, int y, int z);
+	bool isDirtRightOfMe(int x, int y, int z);
+	bool isDirtUnderMe(int x, int y, int z);
+	bool getDistDigManOnX(int x, int y, int& dis);
+	bool getDistDigManOnY(int x, int y, int& dis);
+	bool canShout(int x, int y);
 private:
 	int SonarKits;
 	int currentKey;

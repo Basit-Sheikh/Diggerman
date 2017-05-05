@@ -13,10 +13,7 @@ bool Actor::isDiggerManNearMe(int x, int y) {
 	
 	return true; 
 }
-bool Actor::isDirtUnderMe(){
-	return (getWorld()->isThereDirtVisibleHere(getX(), getY() - 1) || getWorld()->isThereDirtVisibleHere(getX() + 1, getY() - 1) ||
-		getWorld()->isThereDirtVisibleHere(getX() + 2, getY() - 1) || getWorld()->isThereDirtVisibleHere(getX() + 3, getY() - 1)); 
-}
+
 
 /*
 ----------------------------
@@ -88,7 +85,12 @@ void Protester::doSomething() {
 		case move:		//randomly moving state
 			//moveProtester is a helper function for do something
 			//just moves protester, moved to func for readablility of doSomething()
-			moveProtester();
+			if(!checkIfCanSeeDigMan())
+				moveProtester();
+			if (yellCoolDown == 0) {
+				if(getWorld()->canShout(getX(), getY()));
+					yellCoolDown = 15;
+			}
 			break;
 		case annoyed:   //annoyed state, goBackToSafeSpace()
 			break;
@@ -98,39 +100,76 @@ void Protester::doSomething() {
 			if (waitCount < 1)
 				currentState = move;
 			waitCount--;
-
 			break;
-
+		}
+		if( yellCoolDown != 0)
+			yellCoolDown--;
+	}
+}
+bool Protester::checkIfCanSeeDigMan() {
+	int x;
+	if (getWorld()->getDistDigManOnX(getX(), getY(), x)) {
+		if (x < 0) {
+			for (int i = 0; i > x; i--) {
+				if (getWorld()->isDirtLeftOfMe(getX(), getY(), i)) 
+					return false;
+			}
+			followDMHelper(getX() - 1, getY(), left);
+			return true;
+		}
+		if (x > 0) {
+			for (int i = 0; i < x; i++) {
+				if (getWorld()->isDirtRightOfMe(getX(), getY(), i)) 
+					return false;
+			}
+			followDMHelper(getX() + 1, getY(), right);
+			return true;
 		}
 	}
+	int y;
+	if (getWorld()->getDistDigManOnY(getX(), getY(), y)) {
+		if (y < 0) {
+			for (int i = 0; i > y; i--) {
+				if (getWorld()->isDirtUnderMe(getX(), getY(), i))
+					return false;
+			}
+			followDMHelper(getX(), getY() - 1, down);
+			return true;
+		}
+		if (y > 0) {
+			for (int i = 0; i < y; i++) {
+				if (getWorld()->isDirtAboveMe(getX(), getY(), i))
+					return false;
+			}
+			followDMHelper(getX(), getY() + 1, up);
+			return true;
+		}
+	}
+
+}
+void Protester::followDMHelper(int x, int y, Direction d) {
+	setDirection(d);
+	moveTo(x, y);
+	waitCount = getTicksBetweenMoveCount();
+	moveCount = getRandomDirMoveTickCount();
+	currentState = rest;
 }
 int Protester::getTicksBetweenMoveCount(){return max(0, 3 - (int)getWorld()->getLevel() / 4);}
 int Protester::getRandomDirMoveTickCount(){return (rand() % 52) + 8;}
-bool Protester::isDirtAboveMe() {
-	return (getWorld()->isThereDirtVisibleHere(getX(), getY() + 4) || getWorld()->isThereDirtVisibleHere(getX() + 1, getY() + 4) ||
-		getWorld()->isThereDirtVisibleHere(getX() + 2, getY() + 4) || getWorld()->isThereDirtVisibleHere(getX() + 3, getY() + 4));
-}
-bool Protester::isDirtLeftOfMe() {
-	return (getWorld()->isThereDirtVisibleHere(getX() - 1, getY()) || getWorld()->isThereDirtVisibleHere(getX() - 1, getY() + 1) ||
-		getWorld()->isThereDirtVisibleHere(getX() - 1, getY() + 2) || getWorld()->isThereDirtVisibleHere(getX() - 1, getY() + 3));
-}
-bool Protester::isDirtRightOfMe() {
-	return (getWorld()->isThereDirtVisibleHere(getX() + 4, getY()) || getWorld()->isThereDirtVisibleHere(getX() + 4, getY() + 1) ||
-		getWorld()->isThereDirtVisibleHere(getX() + 4, getY() + 2) || getWorld()->isThereDirtVisibleHere(getX() + 4, getY() + 3));
-}
+
 void Protester::protesterMoveHelper(int x, int y){
 	moveTo(getX() + x, getY() + y);
 	moveCount--;
 }
 void Protester::moveProtester(){
 	if (waitCount < 1 && moveCount > 0) {
-		if (getDirection() == left && getX() > 0 && !isDirtLeftOfMe())
+		if (getDirection() == left && getX() > 0 && !getWorld()->isDirtLeftOfMe(getX(), getY(), 0))
 			protesterMoveHelper(-1, 0);
-		else if (getDirection() == right && getX() < VIEW_WIDTH && !isDirtRightOfMe())
+		else if (getDirection() == right && getX() < VIEW_WIDTH && !getWorld()->isDirtRightOfMe(getX(), getY(), 0))
 			protesterMoveHelper(1, 0);
-		else if (getDirection() == down && getY() > 0 && !isDirtUnderMe())
+		else if (getDirection() == down && getY() > 0 && !getWorld()->isDirtUnderMe(getX(), getY(), 0))
 			protesterMoveHelper(0, -1);
-		else if (getDirection() == up && getY() < VIEW_HEIGHT - 4 && !isDirtAboveMe())
+		else if (getDirection() == up && getY() < VIEW_HEIGHT - 4 && !getWorld()->isDirtAboveMe(getX(), getY(), 0))
 			protesterMoveHelper(0, 1);
 		else {
 			setDirection(pickRandomDirection());
@@ -144,6 +183,7 @@ void Protester::moveProtester(){
 		moveCount = getRandomDirMoveTickCount();
 	}
 }
+
 /*
 ----------------------------
 NUGGET IMPLEMENTATION
@@ -167,10 +207,10 @@ void PermGoldNugget::GoldPickedUp() { found = true; }							//gold was found
 void PermGoldNugget::doSomething() {
 	if (!isAlive())
 		return;
-	if (getWorld()->DMinVicinity(4, this)) {
+	if (getWorld()->DMinVicinity(4, getX(), getY())) {
 		this->setVisible(true);
 	}
-	if (getWorld()->DMinVicinity(3, this)) {
+	if (getWorld()->DMinVicinity(3, getX(), getY())) {
 		getWorld()->playSound(SOUND_GOT_GOODIE);
 		getWorld()->increaseScore(10);
 		getWorld()->incrementGoldBait();
@@ -190,7 +230,7 @@ BOULDER IMPLEMENTATION
 void Boulder::doSomething() {
 	switch (currentState) {
 	case falling:
-		if (getY() != 0 && !isDirtUnderMe())
+		if (getY() != 0 && !getWorld()->isDirtUnderMe(getX(), getY(), 0))
 			moveTo(getX(), getY() - 1);
 		else {
 			currentState = done;
@@ -209,7 +249,7 @@ void Boulder::doSomething() {
 			tickCount++;
 		break;
 	case stable:
-		if (!isDirtUnderMe())
+		if (!getWorld()->isDirtUnderMe(getX(), getY(), 0))
 			currentState = waiting;
 		break;
 	}
@@ -224,10 +264,10 @@ BARREL IMPLEMENTATION
 void Barrel::doSomething(){
 	if (!isAlive())
 		return;
-	if (getWorld()->DMinVicinity(4, this)) {
+	if (getWorld()->DMinVicinity(4, getX(), getY())) {
 		this->setVisible(true);
 	}
-	if (getWorld()->DMinVicinity(3, this)) {
+	if (getWorld()->DMinVicinity(3, getX(), getY())) {
 		getWorld()->playSound(SOUND_FOUND_OIL);
 		getWorld()->increaseScore(1000);
 		this->setVisible(false);
@@ -244,7 +284,7 @@ SONAR KIT IMPLEMENTATION
 void Sonar::doSomething() {
 	if (!isAlive())
 		return;
-	if (getWorld()->DMinVicinity(3, this)) {
+	if (getWorld()->DMinVicinity(3, getX(), getY())) {
 		getWorld()->playSound(SOUND_GOT_GOODIE);
 		getWorld()->increaseScore(75);
 		this->setVisible(false);

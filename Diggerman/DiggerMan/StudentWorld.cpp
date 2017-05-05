@@ -2,8 +2,6 @@
 using namespace std;
 
 GameWorld* createStudentWorld(string assetDir) { return new StudentWorld(assetDir); }
-
-
 int StudentWorld::init() {
 	currentKey = -1;
 	GoldBait = 0; //Created to initialize the goldbait count to zero. This will also reset the amount of gold bait at the end of every level to zero -- not sure if that should be done. 
@@ -22,8 +20,6 @@ int StudentWorld::init() {
 	generateField("Boulder");
 	return GWSTATUS_CONTINUE_GAME;
 }
-
-
 int StudentWorld::move() {
 	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
 	// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
@@ -33,7 +29,12 @@ int StudentWorld::move() {
 		decLives();
 		return GWSTATUS_PLAYER_DIED;
 	}
-	dynamic_cast<DiggerMan*>(dm)->doSomething();
+	if (dm->getHealth() <= 0) {
+		decLives();
+		cleanUp();
+		return GWSTATUS_PLAYER_DIED;
+	}
+	dm->doSomething();
 	p->doSomething();
 	for (Actor* a : actors){
 		if (a->isAlive()) 
@@ -44,15 +45,12 @@ int StudentWorld::move() {
 			delete actors[i];
 			actors.erase(actors.begin() + i);
 		}	
-		cout << "SIZE: " << actors.size() << endl;
 	}
-
 	currentKey = 0;
 	return GWSTATUS_CONTINUE_GAME;
 }
-
-bool StudentWorld::DMinVicinity(int range, Actor *a) {
-	double dist = sqrt(pow(dm->getX() - a->getX(), 2) + pow(dm->getY() - a->getY(), 2));
+bool StudentWorld::DMinVicinity(int range, int x, int y) {
+	double dist = sqrt(pow(dm->getX() - x, 2) + pow(dm->getY() - y, 2));
 	return dist <= range;
 }
 void StudentWorld::fillDirt(){
@@ -67,7 +65,7 @@ void StudentWorld::fillDirt(){
 	}
 }
 void StudentWorld::removeDirt(int x, int y) {
-	for (int i = x; i < x + 4; i++)
+	for (int i = x; i < x + 4; i++) {
 		for (int j = y; j < y + 4; j++) {
 			if (dirt[i][j]) {
 				/*****************************************************
@@ -79,15 +77,12 @@ void StudentWorld::removeDirt(int x, int y) {
 				delete temp;
 			}
 		}
+	}
 }
-
-
 void StudentWorld::dropNugget() {
-
 	actors.push_back(new TempGoldNugget(200, dm->getX(), dm->getY(), this));  //Adjust tempNugg life to whatever yall want
 	actors.back()->setVisible(true);
 }
-
 int StudentWorld::numOfGoldBait() {
 	return GoldBait;
 }
@@ -103,18 +98,14 @@ void StudentWorld::decrementSonarKit() {
 int StudentWorld::numOfSonarKits() {
 	return SonarKits;
 }
-
 void StudentWorld::sonarBLAST() { //activates all nuggets and barrels within a radius of 12
 	playSound(SOUND_SONAR); //not in spec but found in code
 	for (Actor *a : actors) {
-		if (DMinVicinity(12, a))
+		if (DMinVicinity(12, a->getX(), a->getY()))
 			a->setVisible(true);
 	}
-
 }
-
 void StudentWorld::incrementGoldBait() { GoldBait++; }
-
 int StudentWorld::randXGenerator() {
 	int x = rand() % 61;
 	while (x > 26 && x < 34)
@@ -127,12 +118,10 @@ int StudentWorld::randYGenerator(string type) {
 		while (y < 20 || y > 56) {
 			y = rand() % 57;
 		}
-
 	}
 	return y;
 }
-bool StudentWorld::goodSpot(int randX,int randY) {
-		
+bool StudentWorld::goodSpot(int randX,int randY) {		
 		if (isThereDirtVisibleHere(randX, randY)) {
 			if (!isThereDirtVisibleHere(randX, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY)) {
 				return false;
@@ -140,7 +129,6 @@ bool StudentWorld::goodSpot(int randX,int randY) {
 			return true;
 		}
 		return false;
-	
 }
 bool StudentWorld::farAway(int x,int y) {
 	for (Actor* a : actors) {
@@ -155,8 +143,6 @@ void StudentWorld::generateField(string type){
 	if      (type == "PermNugget") spawn_amount = numOfGoldNuggets();
 	else if (type == "Barrel")     spawn_amount = numOfOilBarrels();
 	else if (type == "Boulder")    spawn_amount = numOfBoulders();
-
-
 	//------------------------------------------------
 	//Generating items in acceptable situations
 	//-----------------------------------------------
@@ -193,7 +179,6 @@ void StudentWorld::generateField(string type){
 		}
 	}
 }
-
 void StudentWorld::HUD() {
 	string HUD =
 		"Lvl: " + to_string(getLevel()) + " " +
@@ -203,16 +188,58 @@ void StudentWorld::HUD() {
 	setGameStatText(HUD);
 }
 int StudentWorld::getCurKey() { return currentKey; }
-
 //the following determine how many of each Goodie will be in the current level:
 int StudentWorld::numOfGoldNuggets() { return max((int)(5 - getLevel()) / 2, 2); }
 int StudentWorld::numOfBoulders() { return min((int)(getLevel()) / 2 + 2, 7); }
 int StudentWorld::numOfOilBarrels() { return min((int)(2 + getLevel()), 18); }
 int StudentWorld::numOfSonarTicks() { return max(100, int(300-(10*getLevel()))); } //returns how many ticks until sonar kit disappears/expires
-
 bool StudentWorld::isThereDirtVisibleHere(int x, int y){ return dirt[x][y]; }
+void StudentWorld::cleanUp() {
+	delete dm;
+	delete p;
+}
+bool StudentWorld::isDirtAboveMe(int x, int y, int z) {
+	return (isThereDirtVisibleHere(x, y + 4 + z) || isThereDirtVisibleHere(x + 1, y + 4 + z) ||
+		isThereDirtVisibleHere(x + 2, y + 4 + z) || isThereDirtVisibleHere(x + 3, y + 4 + z));
+}
+bool StudentWorld::isDirtLeftOfMe(int x, int y, int z) {
+	return (isThereDirtVisibleHere(x - 1 + z,  y) || isThereDirtVisibleHere(x - 1 + z, y + 1) ||
+		isThereDirtVisibleHere(x - 1 + z, y + 2) || isThereDirtVisibleHere(x - 1 + z, y + 3));
+}
+bool StudentWorld::isDirtRightOfMe(int x, int y, int z) {
+	return (isThereDirtVisibleHere(x + 4 + z, y) || isThereDirtVisibleHere(x + 4 + z, y + 1) ||
+		isThereDirtVisibleHere(x + 4 + z, y + 2) || isThereDirtVisibleHere(x + 4 + z, y + 3));
+}
+bool StudentWorld::isDirtUnderMe(int x, int y, int z){
+	return (isThereDirtVisibleHere(x, y - 1 + z) || isThereDirtVisibleHere(x + 1, y - 1 + z) ||
+		isThereDirtVisibleHere(x + 2, y - 1 + z) || isThereDirtVisibleHere(x + 3, y - 1 + z)); 
+}
+bool StudentWorld::getDistDigManOnX(int x, int y, int & dis) {
+	if (dm->getY() == y) {
+		dis = dm->getX() - x;
+		return true;
+	}
+	return false;
+}
+bool StudentWorld::getDistDigManOnY(int x, int y, int & dis) {
+	if (dm->getX() == x) {
+		dis = dm->getY() - y;
+		return true;
+	}
+	return false;
+}
 
-void StudentWorld::cleanUp() {}
+bool StudentWorld::canShout(int x, int y){
+	if (DMinVicinity(4, x, y)) {
+		playSound(SOUND_PROTESTER_YELL);
+		dm->decHealth(1);
+		return true;
+	}
+	return false;
+}
+
+
+
 
 /*
 --------------------------------------------

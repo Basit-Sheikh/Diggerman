@@ -2,6 +2,8 @@
 #define ACTOR_H_
 #include "GraphObject.h"
 #include <algorithm>
+#include <queue>
+using namespace std;
 // Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 class StudentWorld;
 
@@ -15,7 +17,6 @@ public:
 	bool isAlive() const { return alive; }
 	void kill() { alive = false; }	
 protected:
-	bool isDirtUnderMe();
 private:
 	StudentWorld* world;
     bool isDiggerManNearMe(int x,int y);
@@ -47,13 +48,10 @@ private:
 class Protester : public Character {
 protected:
 	enum State { rest, move, annoyed, follow, start};
-	bool isDirtAboveMe();
-	bool isDirtLeftOfMe();
-	bool isDirtRightOfMe();
 
 public:
 	Protester(StudentWorld * sw) : 
-		Character(IMID_PROTESTER, 60, 60, sw, left, 1.0, 0, 5), currentState(start), moveCount(0), waitCount(0) {}
+		Character(IMID_PROTESTER, 60, 60, sw, left, 1.0, 0, 5), currentState(start), moveCount(0), waitCount(0), yellCoolDown(0) {}
 	virtual void doSomething();
 	int getTicksBetweenMoveCount();
 	int getRandomDirMoveTickCount();
@@ -61,6 +59,7 @@ private:
 	State currentState;
 	int moveCount;
 	int waitCount;
+	int yellCoolDown;
 	Direction pickRandomDirection() {
 		int i = rand() % 4;
 		if (i == 0)
@@ -75,6 +74,9 @@ private:
 	}
     void protesterMoveHelper(int x, int y);
 	void moveProtester();
+	bool checkIfCanSeeDigMan();
+	void followDMHelper(int x, int y, Direction d);
+	queue<pair<int, int>> followDigMan;
 };
 
 
