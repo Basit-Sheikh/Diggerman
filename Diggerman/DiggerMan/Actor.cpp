@@ -62,6 +62,7 @@ void DiggerMan::moveDiggerMan() {
 		break;
 	case KEY_PRESS_TAB:
 		if (getWorld()->numOfSonarKits() > 0) {
+			getWorld()->playSound(SOUND_SONAR);
 			getWorld()->sonarBLAST();
 		}
 	}
@@ -287,6 +288,7 @@ void Sonar::doSomething() {
 	if (getWorld()->DMinVicinity(3, getX(), getY())) {
 		getWorld()->playSound(SOUND_GOT_GOODIE);
 		getWorld()->increaseScore(75);
+		getWorld()->incrementSonarKit();
 		this->setVisible(false);
 		this->kill();
 	}
