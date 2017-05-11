@@ -55,6 +55,8 @@ public:
 	bool getDistDigManOnX(int x, int y, int& dis);
 	bool getDistDigManOnY(int x, int y, int& dis);
 	bool canShout(int x, int y);
+	bool isMoveableLocForProtester(int x, int y);
+	bool isABoulderHere(int x, int y);
 private:
 	int SonarKits;
 	int currentKey;

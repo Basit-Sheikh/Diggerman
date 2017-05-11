@@ -46,6 +46,8 @@ int StudentWorld::move() {
 			actors.erase(actors.begin() + i);
 		}	
 	}
+	if (currentKey == KEY_PRESS_TAB)
+		p->decHealth(50);
 	currentKey = 0;
 	return GWSTATUS_CONTINUE_GAME;
 }
@@ -195,8 +197,7 @@ int StudentWorld::numOfOilBarrels() { return min((int)(2 + getLevel()), 18); }
 int StudentWorld::numOfSonarTicks() { return max(100, int(300-(10*getLevel()))); } //returns how many ticks until sonar kit disappears/expires
 bool StudentWorld::isThereDirtVisibleHere(int x, int y){ return dirt[x][y]; }
 void StudentWorld::cleanUp() {
-	delete dm;
-	delete p;
+
 }
 bool StudentWorld::isDirtAboveMe(int x, int y, int z) {
 	return (isThereDirtVisibleHere(x, y + 4 + z) || isThereDirtVisibleHere(x + 1, y + 4 + z) ||
@@ -228,12 +229,38 @@ bool StudentWorld::getDistDigManOnY(int x, int y, int & dis) {
 	}
 	return false;
 }
-
 bool StudentWorld::canShout(int x, int y){
 	if (DMinVicinity(4, x, y)) {
 		playSound(SOUND_PROTESTER_YELL);
 		dm->decHealth(1);
 		return true;
+	}
+	return false;
+}
+bool StudentWorld::isMoveableLocForProtester(int x, int y){
+	if(y >= VIEW_HEIGHT || y < 0 || x < 0 || x >= VIEW_WIDTH)
+		return false;
+	else {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				if (dirt[x + i][y + j]) {
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+bool StudentWorld::isABoulderHere(int x, int y) {
+	for (auto a : actors) {
+		if (typeid(*a) == typeid(Boulder)) {
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 4; j++) {
+					if (a->getX() + i == x && a->getY() + j == y)
+						return true;
+				}
+			}
+		}
 	}
 	return false;
 }

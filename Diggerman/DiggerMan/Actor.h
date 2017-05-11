@@ -3,6 +3,7 @@
 #include "GraphObject.h"
 #include <algorithm>
 #include <queue>
+#include <stack>
 using namespace std;
 // Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 class StudentWorld;
@@ -50,16 +51,18 @@ protected:
 	enum State { rest, move, annoyed, follow, start};
 
 public:
-	Protester(StudentWorld * sw) : 
-		Character(IMID_PROTESTER, 60, 60, sw, left, 1.0, 0, 5), currentState(start), moveCount(0), waitCount(0), yellCoolDown(0) {}
+	Protester(StudentWorld * sw) :
+		Character(IMID_PROTESTER, 60, 60, sw, left, 1.0, 0, 5), currentState(start), moveCount(0), waitCount(0), yellCoolDown(0), quickPathFound(false) {}
 	virtual void doSomething();
 	int getTicksBetweenMoveCount();
-	int getRandomDirMoveTickCount();
+	int getRandomDirMoveTickCount();	
+	void goBackToSafeSpace();
 private:
 	State currentState;
 	int moveCount;
 	int waitCount;
 	int yellCoolDown;
+	bool quickPathFound;
 	Direction pickRandomDirection() {
 		int i = rand() % 4;
 		if (i == 0)
@@ -76,7 +79,9 @@ private:
 	void moveProtester();
 	bool checkIfCanSeeDigMan();
 	void followDMHelper(int x, int y, Direction d);
-	queue<pair<int, int>> followDigMan;
+	queue<pair<pair<int, int>, int>> bfsQueue;
+	int bfsArray[64][64];
+	void print();
 };
 
 

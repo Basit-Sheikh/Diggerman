@@ -33,25 +33,25 @@ void DiggerMan::moveDiggerMan() {
 	case KEY_PRESS_DOWN:
 		if (getDirection() != down)
 			setDirection(down);
-		else if (getY() > 0)
+		else if (getY() > 0 && !getWorld()->isABoulderHere(getX(), getY() -1 ))
 			moveTo(getX(), getY() - 1);
 		break;
 	case KEY_PRESS_LEFT:
 		if (getDirection() != left)
 			setDirection(left);
-		else if (getX() > 0)
+		else if (getX() > 0 && !getWorld()->isABoulderHere(getX() - 1, getY()))
 			moveTo(getX() - 1, getY());
 		break;
 	case KEY_PRESS_RIGHT:
 		if (getDirection() != right)
 			setDirection(right);
-		else if (getX() < VIEW_WIDTH - 4)
+		else if (getX() < VIEW_WIDTH - 4 && !getWorld()->isABoulderHere(getX() + 1, getY()))
 			moveTo(getX() + 1, getY());
 		break;
 	case KEY_PRESS_UP:
 		if (getDirection() != up)
 			setDirection(up);
-		else if (getY() < VIEW_HEIGHT - 4)
+		else if (getY() < VIEW_HEIGHT - 4 && !getWorld()->isABoulderHere(getX(), getY() + 1))
 			moveTo(getX(), getY() + 1);
 		break;
 	case KEY_PRESS_SPACE:
@@ -61,9 +61,11 @@ void DiggerMan::moveDiggerMan() {
 		}
 		break;
 	case KEY_PRESS_TAB:
+		
 		if (getWorld()->numOfSonarKits() > 0) {
 			getWorld()->sonarBLAST();
 		}
+		break;
 	}
 }
 void DiggerMan::clearDirt() { getWorld()->removeDirt(getX(), getY()); }
@@ -74,6 +76,8 @@ PROTESTER IMPLEMENTATION
 */
 void Protester::doSomething() {
 	if (isAlive()) {
+		if (getHealth() < 0 && waitCount <=0)
+			currentState = annoyed;
 		//rest, move, annoyed, follow, start
 		switch (currentState) {
 		case start:		//init state
@@ -93,6 +97,7 @@ void Protester::doSomething() {
 			}
 			break;
 		case annoyed:   //annoyed state, goBackToSafeSpace()
+			goBackToSafeSpace();
 			break;
 		case follow:    //following diggerman
 			break;
@@ -153,6 +158,57 @@ void Protester::followDMHelper(int x, int y, Direction d) {
 	waitCount = getTicksBetweenMoveCount();
 	moveCount = getRandomDirMoveTickCount();
 	currentState = rest;
+}
+void Protester::goBackToSafeSpace(){
+	if (quickPathFound) {
+		int u = 100000,d = 100000, l = 100000, r = 100000;
+		if (getY() + 1 < 64 && bfsArray[getX()][getY() + 1] != -2)
+			u = bfsArray[getX()][getY() + 1];
+		if (getY() - 1 >= 0 && bfsArray[getX()][getY() - 1] != -2)
+			d = bfsArray[getX()][getY() - 1];
+		if (getX() + 1 < 64 && bfsArray[getX() + 1][getY()] != -2)
+			r = bfsArray[getX() + 1][getY()];
+		if (getX() - 1 >= 0 && bfsArray[getX() - 1][getY()] != -2) 
+			l = bfsArray[getX() - 1][getY()];
+		if (u <= r && u <= l && u <= d)
+			moveTo(getX(), getY() + 1);
+		else if (r <= u && r <= l && r <= d)
+			moveTo(getX() + 1, getY());
+		else if (l <= u && l <= r && l <= d)
+			moveTo(getX() - 1, getY());
+		else if(d <= u && d <= r && d <= l)
+			moveTo(getX(), getY() - 1);
+		waitCount = getTicksBetweenMoveCount();
+		currentState = rest;
+	}
+	else {
+		for (int i = 0; i < VIEW_WIDTH; i++) {
+			for (int j = 0; j < VIEW_HEIGHT; j++) {
+				if (!getWorld()->isMoveableLocForProtester(i, j) || getWorld()->isABoulderHere(i, j))
+					bfsArray[i][j] = -2;
+				else
+					bfsArray[i][j] = -1;
+			}
+		}	
+		bfsArray[60][60] = 0;
+		bfsQueue.push(make_pair(make_pair(60, 60), 0));
+		while (!bfsQueue.empty()) {
+			pair<pair<int, int>, int> p = bfsQueue.front();
+			bfsQueue.pop();
+			//if surrounding nodes are in bounds, and not visited, then push to queue
+			if (p.first.first + 1 < VIEW_WIDTH && bfsArray[p.first.first + 1][p.first.second] == -1)
+				bfsQueue.push(make_pair(make_pair(p.first.first + 1, p.first.second), p.second + 1));
+			if (p.first.first - 1 >= 0 && bfsArray[p.first.first - 1][p.first.second] == -1)
+				bfsQueue.push(make_pair(make_pair(p.first.first - 1, p.first.second), p.second + 1));
+			if (p.first.second - 1 >= 0 && bfsArray[p.first.first][p.first.second - 1] == -1)
+				bfsQueue.push(make_pair(make_pair(p.first.first, p.first.second - 1), p.second + 1));
+			if (p.first.second + 1 < VIEW_HEIGHT && bfsArray[p.first.first][p.first.second + 1] == -1)
+				bfsQueue.push(make_pair(make_pair(p.first.first, p.first.second + 1), p.second + 1));
+			bfsArray[p.first.first][p.first.second] = p.second;
+		}
+		quickPathFound = true;
+
+	}
 }
 int Protester::getTicksBetweenMoveCount(){return max(0, 3 - (int)getWorld()->getLevel() / 4);}
 int Protester::getRandomDirMoveTickCount(){return (rand() % 52) + 8;}
@@ -300,5 +356,3 @@ void Sonar::doSomething() {
 int Sonar::current_ticks() { return ticks; }
 void Sonar::decrement_tick() { if (ticks > 0) ticks--; }
 void Sonar::set_ticks() { ticks = getWorld()->numOfSonarTicks(); }
-
-
