@@ -29,6 +29,7 @@ int StudentWorld::move() {
 		decLives();
 		return GWSTATUS_PLAYER_DIED;
 	}
+
 	if (dm->getHealth() <= 0) {
 		decLives();
 		cleanUp();
@@ -101,11 +102,12 @@ int StudentWorld::numOfSonarKits() {
 	return SonarKits;
 }
 void StudentWorld::sonarBLAST() { //activates all nuggets and barrels within a radius of 12
-	playSound(SOUND_SONAR); //not in spec but found in code
+	//playSound(SOUND_SONAR); //not in spec but found in code
 	for (Actor *a : actors) {
 		if (DMinVicinity(12, a->getX(), a->getY()))
 			a->setVisible(true);
 	}
+	decrementSonarKit();
 }
 void StudentWorld::incrementGoldBait() { GoldBait++; }
 int StudentWorld::randXGenerator() {
@@ -197,7 +199,31 @@ int StudentWorld::numOfOilBarrels() { return min((int)(2 + getLevel()), 18); }
 int StudentWorld::numOfSonarTicks() { return max(100, int(300-(10*getLevel()))); } //returns how many ticks until sonar kit disappears/expires
 bool StudentWorld::isThereDirtVisibleHere(int x, int y){ return dirt[x][y]; }
 void StudentWorld::cleanUp() {
+<<<<<<< HEAD
 
+=======
+	//delete dirt
+	for (int i = 0; i < VIEW_WIDTH; i++) {
+		for (int j = 0; j < VIEW_HEIGHT; j++) {
+			Dirt* temp = dirt[i][j];
+			dirt[i][j] = nullptr;
+			delete temp;
+		}
+	}
+	//delete actors
+	for (int i = 0; i < actors.size(); i++) {
+		delete actors[i];
+		actors.erase(actors.begin() + i);
+	}
+	//delete protestor
+	Protester *temp = p;
+	p = nullptr;
+	delete temp;
+	//delete diggerman last
+	DiggerMan *temp2 = dm;
+	dm = nullptr;
+	delete temp2;
+>>>>>>> f11c917253c48ea8f549b1b731dac9c412132400
 }
 bool StudentWorld::isDirtAboveMe(int x, int y, int z) {
 	return (isThereDirtVisibleHere(x, y + 4 + z) || isThereDirtVisibleHere(x + 1, y + 4 + z) ||
