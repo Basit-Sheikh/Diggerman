@@ -98,7 +98,10 @@ void Protester::doSomething() {
 			}
 			break;
 		case annoyed:   //annoyed state, goBackToSafeSpace()
-			goBackToSafeSpace();
+			if (getX() == 60 && getY() == 60)
+				kill();
+			else
+				goBackToSafeSpace();
 			break;
 		case follow:    //following diggerman
 			break;
@@ -171,14 +174,22 @@ void Protester::goBackToSafeSpace(){
 			r = bfsArray[getX() + 1][getY()];
 		if (getX() - 1 >= 0 && bfsArray[getX() - 1][getY()] != -2) 
 			l = bfsArray[getX() - 1][getY()];
-		if (u <= r && u <= l && u <= d)
-			moveTo(getX(), getY() + 1);
-		else if (r <= u && r <= l && r <= d)
-			moveTo(getX() + 1, getY());
-		else if (l <= u && l <= r && l <= d)
-			moveTo(getX() - 1, getY());
-		else if(d <= u && d <= r && d <= l)
-			moveTo(getX(), getY() - 1);
+		if (u <= r && u <= l && u <= d) {
+			setDirection(up);
+			protesterMoveHelper(0, 1);
+		}
+		else if (r <= u && r <= l && r <= d) {
+			setDirection(right);
+			protesterMoveHelper(1, 0);
+		}
+		else if (l <= u && l <= r && l <= d) {
+			setDirection(left);
+			protesterMoveHelper(-1, 0);
+		}
+		else if (d <= u && d <= r && d <= l) {
+			setDirection(down);
+			protesterMoveHelper(0, -1);
+		}
 		waitCount = getTicksBetweenMoveCount();
 		currentState = rest;
 	}
@@ -191,20 +202,27 @@ void Protester::goBackToSafeSpace(){
 					bfsArray[i][j] = -1;
 			}
 		}	
-		bfsArray[60][60] = 0;
 		bfsQueue.push(make_pair(make_pair(60, 60), 0));
 		while (!bfsQueue.empty()) {
 			pair<pair<int, int>, int> p = bfsQueue.front();
 			bfsQueue.pop();
 			//if surrounding nodes are in bounds, and not visited, then push to queue
-			if (p.first.first + 1 < VIEW_WIDTH && bfsArray[p.first.first + 1][p.first.second] == -1)
+			if (p.first.first + 1 < VIEW_WIDTH && bfsArray[p.first.first + 1][p.first.second] == -1) {
 				bfsQueue.push(make_pair(make_pair(p.first.first + 1, p.first.second), p.second + 1));
-			if (p.first.first - 1 >= 0 && bfsArray[p.first.first - 1][p.first.second] == -1)
+				bfsArray[p.first.first + 1][p.first.second] = p.second + 1;
+			}
+			if (p.first.first - 1 >= 0 && bfsArray[p.first.first - 1][p.first.second] == -1) {
 				bfsQueue.push(make_pair(make_pair(p.first.first - 1, p.first.second), p.second + 1));
-			if (p.first.second - 1 >= 0 && bfsArray[p.first.first][p.first.second - 1] == -1)
+				bfsArray[p.first.first - 1][p.first.second] = p.second + 1;
+			}
+			if (p.first.second - 1 >= 0 && bfsArray[p.first.first][p.first.second - 1] == -1) {
 				bfsQueue.push(make_pair(make_pair(p.first.first, p.first.second - 1), p.second + 1));
-			if (p.first.second + 1 < VIEW_HEIGHT && bfsArray[p.first.first][p.first.second + 1] == -1)
+				bfsArray[p.first.first][p.first.second - 1] = p.second + 1;
+			}
+			if (p.first.second + 1 < VIEW_HEIGHT && bfsArray[p.first.first][p.first.second + 1] == -1) {
 				bfsQueue.push(make_pair(make_pair(p.first.first, p.first.second + 1), p.second + 1));
+				bfsArray[p.first.first][p.first.second + 1] = p.second + 1;
+			}
 			bfsArray[p.first.first][p.first.second] = p.second;
 		}
 		quickPathFound = true;

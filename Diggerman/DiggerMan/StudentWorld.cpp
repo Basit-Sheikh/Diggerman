@@ -170,11 +170,11 @@ void StudentWorld::generateField(string type){
 		
 		if (type == "PermNugget") {
 			actors.push_back(new PermGoldNugget(this, randX, randY)); 
-			actors.back()->setVisible(false);
+			actors.back()->setVisible(true);
 		} 
 		else if (type == "Barrel") {
 			actors.push_back(new Barrel(randX, randY, this)); 
-			actors.back()->setVisible(false);
+			actors.back()->setVisible(true);
 		}		
 		else if (type == "Boulder") {
 			actors.push_back(new Boulder(randX, randY, this));
@@ -199,9 +199,7 @@ int StudentWorld::numOfOilBarrels() { return min((int)(2 + getLevel()), 18); }
 int StudentWorld::numOfSonarTicks() { return max(100, int(300-(10*getLevel()))); } //returns how many ticks until sonar kit disappears/expires
 bool StudentWorld::isThereDirtVisibleHere(int x, int y){ return dirt[x][y]; }
 void StudentWorld::cleanUp() {
-<<<<<<< HEAD
 
-=======
 	//delete dirt
 	for (int i = 0; i < VIEW_WIDTH; i++) {
 		for (int j = 0; j < VIEW_HEIGHT; j++) {
@@ -223,7 +221,6 @@ void StudentWorld::cleanUp() {
 	DiggerMan *temp2 = dm;
 	dm = nullptr;
 	delete temp2;
->>>>>>> f11c917253c48ea8f549b1b731dac9c412132400
 }
 bool StudentWorld::isDirtAboveMe(int x, int y, int z) {
 	return (isThereDirtVisibleHere(x, y + 4 + z) || isThereDirtVisibleHere(x + 1, y + 4 + z) ||

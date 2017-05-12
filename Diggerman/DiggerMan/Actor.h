@@ -83,14 +83,6 @@ private:
 	int bfsArray[64][64];
 	void print();
 };
-
-
-
-
-
-
-
-
 class Dirt : public Actor {
 public:
 	Dirt(int startX, int startY, StudentWorld* sw) :
