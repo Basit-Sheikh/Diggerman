@@ -33,6 +33,7 @@ public:
 	int numOfSonarTicks();
 	bool isThereDirtVisibleHere(int x, int y);
 	bool DMinVicinity(int range, int x, int y);
+	bool ProtesterinVicinity(int range, int x, int y);
 	int dmXlocation() { return dm->getX(); }
 	int dmYlocation() { return dm->getY(); }
 	void generateField(string type);

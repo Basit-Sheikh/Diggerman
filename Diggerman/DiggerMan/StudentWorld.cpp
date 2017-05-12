@@ -10,14 +10,15 @@ int StudentWorld::init() {
 	dm = new DiggerMan(this);
 	dm->setVisible(true);
 	fillDirt();
-	p = new Protester(this);
-	p->setVisible(true);
+	//p = new Protester(this);
+	//p->setVisible(true);
 	int G = getLevel() * 25 + 300;
 	actors.push_back(new Sonar(0, 60, this));
 	actors.back()->setVisible(true);
 	generateField("Barrel");
 	generateField("PermNugget");
 	generateField("Boulder");
+	generateField("RegProtester");
 	return GWSTATUS_CONTINUE_GAME;
 }
 int StudentWorld::move() {
@@ -36,7 +37,6 @@ int StudentWorld::move() {
 		return GWSTATUS_PLAYER_DIED;
 	}
 	dm->doSomething();
-	p->doSomething();
 	for (Actor* a : actors){
 		if (a->isAlive()) 
 			a->doSomething();
@@ -47,14 +47,26 @@ int StudentWorld::move() {
 			actors.erase(actors.begin() + i);
 		}	
 	}
-	if (currentKey == KEY_PRESS_TAB)
-		p->decHealth(50);
 	currentKey = 0;
 	return GWSTATUS_CONTINUE_GAME;
 }
 bool StudentWorld::DMinVicinity(int range, int x, int y) {
 	double dist = sqrt(pow(dm->getX() - x, 2) + pow(dm->getY() - y, 2));
 	return dist <= range;
+}
+bool StudentWorld::ProtesterinVicinity(int range, int x, int y) {
+	for (Actor* a : actors) {
+		if (a->isRegProtester()) {
+			double dist = sqrt(pow(a->getX() - x, 2) + pow(a->getY() - y, 2));
+			if (dist <= range) {
+				dynamic_cast<Protester*>(a)->decHealth(10);
+				return true;
+			}
+			else return false;
+		}
+	}
+	return false;
+	
 }
 void StudentWorld::fillDirt(){
 	for (int i = 0; i < VIEW_WIDTH; i++) {
@@ -147,6 +159,11 @@ void StudentWorld::generateField(string type){
 	if      (type == "PermNugget") spawn_amount = numOfGoldNuggets();
 	else if (type == "Barrel")     spawn_amount = numOfOilBarrels();
 	else if (type == "Boulder")    spawn_amount = numOfBoulders();
+	else if (type == "RegProtester") {
+		actors.push_back(new Protester(this));
+		actors.back()->setVisible(true);
+		return;
+	}
 	//------------------------------------------------
 	//Generating items in acceptable situations
 	//-----------------------------------------------
@@ -213,10 +230,7 @@ void StudentWorld::cleanUp() {
 		delete actors[i];
 		actors.erase(actors.begin() + i);
 	}
-	//delete protestor
-	Protester *temp = p;
-	p = nullptr;
-	delete temp;
+
 	//delete diggerman last
 	DiggerMan *temp2 = dm;
 	dm = nullptr;

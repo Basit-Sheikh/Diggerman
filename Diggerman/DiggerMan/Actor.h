@@ -16,6 +16,7 @@ public:
 	virtual void doSomething() {};
 	StudentWorld* getWorld() const { return world; }
 	bool isAlive() const { return alive; }
+	virtual bool isRegProtester() { return false; }
 	void kill() { alive = false; }	
 protected:
 private:
@@ -48,15 +49,17 @@ private:
 
 class Protester : public Character {
 protected:
-	enum State { rest, move, annoyed, follow, start};
+	enum State { rest, move, annoyed, follow, start };
 
 public:
 	Protester(StudentWorld * sw) :
 		Character(IMID_PROTESTER, 60, 60, sw, left, 1.0, 0, 5), currentState(start), moveCount(0), waitCount(0), yellCoolDown(0), quickPathFound(false) {}
 	virtual void doSomething();
 	int getTicksBetweenMoveCount();
-	int getRandomDirMoveTickCount();	
+	int getRandomDirMoveTickCount();
 	void goBackToSafeSpace();
+	virtual bool isRegProtester() { return true;}
+	void setStateAnnoyed() { currentState = annoyed; }
 private:
 	State currentState;
 	int moveCount;

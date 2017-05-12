@@ -113,7 +113,9 @@ void Protester::doSomething() {
 		}
 		if( yellCoolDown != 0)
 			yellCoolDown--;
+		
 	}
+	else return;
 }
 bool Protester::checkIfCanSeeDigMan() {
 	int x;
@@ -274,7 +276,17 @@ void TempGoldNugget::doSomething() {
 		this->setVisible(false);
 		this->kill();
 	}
-	else decreaseLifeTicks();
+	else {
+		if (getWorld()->ProtesterinVicinity( 3, this->getX(), this->getY())) {
+			getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
+			getWorld()->increaseScore(25);
+			//this->setVisible(false);
+			//this->kill();
+			//call bfs to make protester run back
+			
+		}
+		decreaseLifeTicks();
+	}
 }
 //=====Perm Nugget=====
 
