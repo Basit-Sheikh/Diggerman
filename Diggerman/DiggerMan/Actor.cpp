@@ -54,19 +54,39 @@ void DiggerMan::moveDiggerMan() {
 		else if (getY() < VIEW_HEIGHT - 4 && !getWorld()->isABoulderHere(getX(), getY() + 1))
 			moveTo(getX(), getY() + 1);
 		break;
-	case KEY_PRESS_SPACE:
+	case KEY_PRESS_TAB:
 		if (getWorld()->numOfGoldBait() > 0) {
 			getWorld()->dropNugget();
 			getWorld()->decrementGoldBait();
 		}
 		break;
-	case KEY_PRESS_TAB:
-		
+	case 'z':
 		if (getWorld()->numOfSonarKits() > 0) {
 			getWorld()->playSound(SOUND_SONAR);
 			getWorld()->sonarBLAST();
 		}
 		break;
+	case KEY_PRESS_SPACE:
+		if (getDirection() == up)
+		{
+			getWorld()->addSquirtWeapon(new Squirt(getWorld(), up, getX(), getY())); //push to back of vector so it calls do something
+			break;
+		}
+		else if (getDirection() == down)
+		{
+			getWorld()->addSquirtWeapon(new Squirt(getWorld(), down, getX(), getY())); //push to back of vector so it calls do something
+			break;
+		}
+		else if (getDirection() == left)
+		{
+			getWorld()->addSquirtWeapon(new Squirt(getWorld(), left, getX(), getY())); //push to back of vector so it calls do something
+			break;
+		}
+		else if (getDirection() == right)
+		{
+			getWorld()->addSquirtWeapon(new Squirt(getWorld(), right, getX(), getY())); //push to back of vector so it calls do something
+			break;
+		}
 	}
 }
 void DiggerMan::clearDirt() { getWorld()->removeDirt(getX(), getY()); }
@@ -277,12 +297,11 @@ void TempGoldNugget::doSomething() {
 		this->kill();
 	}
 	else {
-		if (getWorld()->ProtesterinVicinity( 3, this->getX(), this->getY())) {
+		if (getWorld()->ProtesterinVicinity( 3, this->getX(), this->getY(), 'n')) {
+			setVisible(false);
+			this->kill();
 			getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
 			getWorld()->increaseScore(25);
-			//this->setVisible(false);
-			//this->kill();
-			//call bfs to make protester run back
 			
 		}
 		decreaseLifeTicks();
@@ -388,3 +407,56 @@ void Sonar::doSomething() {
 int Sonar::current_ticks() { return ticks; }
 void Sonar::decrement_tick() { if (ticks > 0) ticks--; }
 void Sonar::set_ticks() { ticks = getWorld()->numOfSonarTicks(); }
+
+/*
+----------------------------
+SQUIRT GUN IMPLEMENTATION
+----------------------------
+*/
+
+void Squirt::doSomething() {
+	if (!isAlive()) return;
+
+	//protestorinvicinity checks if he is in range, and if he is, it damages him.
+	if (getWorld()->ProtesterinVicinity(getX(), getY(), squirt_distance, 's'))
+	{
+
+	}
+
+	if (squirt_distance == 4) {
+		this->kill();
+		return;
+	}
+
+	else {
+		if (getDirection() == up) {
+			if (!getWorld()->isDirtAboveMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance))
+				incrementDistance();
+			else kill();
+		}
+		else if (getDirection() == down) {
+			if (!getWorld()->isDirtUnderMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance))
+				incrementDistance();
+			else kill();
+
+		}
+		else if (getDirection() == left) {
+			if (!getWorld()->isDirtLeftOfMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance))
+				incrementDistance();
+			else kill();
+
+		}
+		else if (getDirection() == right) {
+			if (!getWorld()->isDirtRightOfMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance))
+				incrementDistance();
+			else kill();
+			//if you can move in that direction
+			//increase distance_traveled by 1
+			//else kill()
+
+		}
+	}
+
+
+
+}

@@ -33,7 +33,7 @@ public:
 	int numOfSonarTicks();
 	bool isThereDirtVisibleHere(int x, int y);
 	bool DMinVicinity(int range, int x, int y);
-	bool ProtesterinVicinity(int range, int x, int y);
+	bool ProtesterinVicinity(int range, int x, int y, char type);
 	int dmXlocation() { return dm->getX(); }
 	int dmYlocation() { return dm->getY(); }
 	void generateField(string type);
@@ -58,6 +58,7 @@ public:
 	bool canShout(int x, int y);
 	bool isMoveableLocForProtester(int x, int y);
 	bool isABoulderHere(int x, int y);
+	void addSquirtWeapon(Squirt* s);
 private:
 	int SonarKits;
 	int currentKey;

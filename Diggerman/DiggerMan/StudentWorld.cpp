@@ -54,12 +54,13 @@ bool StudentWorld::DMinVicinity(int range, int x, int y) {
 	double dist = sqrt(pow(dm->getX() - x, 2) + pow(dm->getY() - y, 2));
 	return dist <= range;
 }
-bool StudentWorld::ProtesterinVicinity(int range, int x, int y) {
+bool StudentWorld::ProtesterinVicinity(int range, int x, int y, char type) {
 	for (Actor* a : actors) {
 		if (a->isRegProtester()) {
 			double dist = sqrt(pow(a->getX() - x, 2) + pow(a->getY() - y, 2));
 			if (dist <= range) {
-				dynamic_cast<Protester*>(a)->decHealth(10);
+				if (type == 'n') dynamic_cast<Protester*>(a)->decHealth(10);       //nugget bait
+				else if (type == 's') dynamic_cast<Protester*>(a)->decHealth(2);   //squirt hit
 				return true;
 			}
 			else return false;
@@ -303,6 +304,10 @@ bool StudentWorld::isABoulderHere(int x, int y) {
 }
 
 
+void StudentWorld::addSquirtWeapon(Squirt* s) { 
+	actors.push_back(s); 
+	actors.back()->setVisible(true);
+}
 
 
 /*

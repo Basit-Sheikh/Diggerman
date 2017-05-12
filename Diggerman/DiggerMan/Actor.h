@@ -166,7 +166,17 @@ private:
 	bool found = false;
 };
 
-
+class Squirt : public Actor { //cannot inherit from goodies because depth is 1 not 2
+public:
+	Squirt(StudentWorld* sw, Direction d, int x, int y) :
+		Actor(IMID_WATER_SPURT, x, y, right, 1, 1, sw) {
+		squirt_distance = 0;
+	};
+	virtual void doSomething();
+	void incrementDistance() { squirt_distance++; }
+private:
+	int squirt_distance;
+};
 
 
 #endif // ACTOR_H_
