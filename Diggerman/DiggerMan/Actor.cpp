@@ -69,22 +69,22 @@ void DiggerMan::moveDiggerMan() {
 	case KEY_PRESS_SPACE:
 		if (getDirection() == up)
 		{
-			getWorld()->addSquirtWeapon(new Squirt(getWorld(), up, getX(), getY())); //push to back of vector so it calls do something
+			getWorld()->addSquirtWeapon(new Squirt(getWorld(), up, getX(), getY()+4)); //push to back of vector so it calls do something
 			break;
 		}
 		else if (getDirection() == down)
 		{
-			getWorld()->addSquirtWeapon(new Squirt(getWorld(), down, getX(), getY())); //push to back of vector so it calls do something
+			getWorld()->addSquirtWeapon(new Squirt(getWorld(), down, getX(), getY()-4)); //push to back of vector so it calls do something
 			break;
 		}
 		else if (getDirection() == left)
 		{
-			getWorld()->addSquirtWeapon(new Squirt(getWorld(), left, getX(), getY())); //push to back of vector so it calls do something
+			getWorld()->addSquirtWeapon(new Squirt(getWorld(), left, getX()-4, getY())); //push to back of vector so it calls do something
 			break;
 		}
 		else if (getDirection() == right)
 		{
-			getWorld()->addSquirtWeapon(new Squirt(getWorld(), right, getX(), getY())); //push to back of vector so it calls do something
+			getWorld()->addSquirtWeapon(new Squirt(getWorld(), right, getX()+4, getY())); //push to back of vector so it calls do something
 			break;
 		}
 	}
@@ -418,11 +418,11 @@ void Squirt::doSomething() {
 	if (!isAlive()) return;
 
 	//protestorinvicinity checks if he is in range, and if he is, it damages him.
-	if (getWorld()->ProtesterinVicinity(getX(), getY(), squirt_distance, 's'))
+	if (getWorld()->ProtesterinVicinity(3, getX(), getY(), 's'))
 	{
+		getWorld()->playSound(SOUND_PROTESTER_ANNOYED);
 
 	}
-
 	if (squirt_distance == 4) {
 		this->kill();
 		return;
