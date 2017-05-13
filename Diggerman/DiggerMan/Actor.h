@@ -53,7 +53,7 @@ protected:
 
 public:
 	Protester(StudentWorld * sw) :
-		Character(IMID_PROTESTER, 60, 60, sw, left, 1.0, 0, 5), currentState(start), moveCount(0), waitCount(0), yellCoolDown(0), quickPathFound(false) {}
+		Character(IMID_PROTESTER, 60, 60, sw, left, 1.0, 0, 10), currentState(start), moveCount(0), waitCount(0), yellCoolDown(0), quickPathFound(false) {}
 	virtual void doSomething();
 	int getTicksBetweenMoveCount();
 	int getRandomDirMoveTickCount();
@@ -169,7 +169,7 @@ private:
 class Squirt : public Actor { //cannot inherit from goodies because depth is 1 not 2
 public:
 	Squirt(StudentWorld* sw, Direction d, int x, int y) :
-		Actor(IMID_WATER_SPURT, x, y, right, 1, 1, sw) {
+		Actor(IMID_WATER_SPURT, x, y, d, 1, 1, sw) {
 		squirt_distance = 0;
 	};
 	virtual void doSomething();

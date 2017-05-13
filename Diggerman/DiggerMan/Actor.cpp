@@ -69,22 +69,22 @@ void DiggerMan::moveDiggerMan() {
 	case KEY_PRESS_SPACE:
 		if (getDirection() == up)
 		{
-			getWorld()->addSquirtWeapon(new Squirt(getWorld(), up, getX(), getY()+4)); //push to back of vector so it calls do something
+			getWorld()->addSquirtWeapon(new Squirt(getWorld(), up, getX(), getY())); //push to back of vector so it calls do something
 			break;
 		}
 		else if (getDirection() == down)
 		{
-			getWorld()->addSquirtWeapon(new Squirt(getWorld(), down, getX(), getY()-4)); //push to back of vector so it calls do something
+			getWorld()->addSquirtWeapon(new Squirt(getWorld(), down, getX(), getY())); //push to back of vector so it calls do something
 			break;
 		}
 		else if (getDirection() == left)
 		{
-			getWorld()->addSquirtWeapon(new Squirt(getWorld(), left, getX()-4, getY())); //push to back of vector so it calls do something
+			getWorld()->addSquirtWeapon(new Squirt(getWorld(), left, getX(), getY())); //push to back of vector so it calls do something
 			break;
 		}
 		else if (getDirection() == right)
 		{
-			getWorld()->addSquirtWeapon(new Squirt(getWorld(), right, getX()+4, getY())); //push to back of vector so it calls do something
+			getWorld()->addSquirtWeapon(new Squirt(getWorld(), right, getX(), getY())); //push to back of vector so it calls do something
 			break;
 		}
 	}
@@ -423,32 +423,42 @@ void Squirt::doSomething() {
 		getWorld()->playSound(SOUND_PROTESTER_ANNOYED);
 
 	}
-	if (squirt_distance == 4) {
+	if (squirt_distance == 8) {
 		this->kill();
 		return;
 	}
 
 	else {
 		if (getDirection() == up) {
-			if (!getWorld()->isDirtAboveMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance))
+			if (!getWorld()->isDirtAboveMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance) && !getWorld()->isABoulderHere(getX(), getY())) {
+				this->moveTo(getWorld()->dmXlocation(), getWorld()->dmYlocation()+1 + squirt_distance);
 				incrementDistance();
+			}
 			else kill();
 		}
 		else if (getDirection() == down) {
-			if (!getWorld()->isDirtUnderMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance))
+			if (!getWorld()->isDirtUnderMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance) && !getWorld()->isABoulderHere(getX(), getY())) {
+				this->moveTo(getWorld()->dmXlocation(), getWorld()->dmYlocation()-1 - squirt_distance);
 				incrementDistance();
+			}
 			else kill();
 
 		}
 		else if (getDirection() == left) {
-			if (!getWorld()->isDirtLeftOfMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance))
+			if (!getWorld()->isDirtLeftOfMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance) && !getWorld()->isABoulderHere(getX(),getY())) {
+				this->moveTo(getWorld()->dmXlocation()-1 - squirt_distance, getWorld()->dmYlocation());
 				incrementDistance();
+			}
+
 			else kill();
 
 		}
 		else if (getDirection() == right) {
-			if (!getWorld()->isDirtRightOfMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance))
+			if (!getWorld()->isDirtRightOfMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance) && !getWorld()->isABoulderHere(getX(), getY())) {
+				this->moveTo(getWorld()->dmXlocation() + 1 + squirt_distance, getWorld()->dmYlocation());
 				incrementDistance();
+			}
+
 			else kill();
 			//if you can move in that direction
 			//increase distance_traveled by 1
