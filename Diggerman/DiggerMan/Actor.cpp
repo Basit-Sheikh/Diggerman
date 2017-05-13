@@ -55,38 +55,16 @@ void DiggerMan::moveDiggerMan() {
 			moveTo(getX(), getY() + 1);
 		break;
 	case KEY_PRESS_TAB:
-		if (getWorld()->numOfGoldBait() > 0) {
+		if (getWorld()->numOfGoldBait() > 0)
 			getWorld()->dropNugget();
-			getWorld()->decrementGoldBait();
-		}
 		break;
 	case 'z':
-		if (getWorld()->numOfSonarKits() > 0) {
-			getWorld()->playSound(SOUND_SONAR);
+		if (getWorld()->numOfSonarKits() > 0)
 			getWorld()->sonarBLAST();
-		}
 		break;
 	case KEY_PRESS_SPACE:
-		if (getDirection() == up)
-		{
-			getWorld()->addSquirtWeapon(new Squirt(getWorld(), up, getX(), getY())); //push to back of vector so it calls do something
-			break;
-		}
-		else if (getDirection() == down)
-		{
-			getWorld()->addSquirtWeapon(new Squirt(getWorld(), down, getX(), getY())); //push to back of vector so it calls do something
-			break;
-		}
-		else if (getDirection() == left)
-		{
-			getWorld()->addSquirtWeapon(new Squirt(getWorld(), left, getX(), getY())); //push to back of vector so it calls do something
-			break;
-		}
-		else if (getDirection() == right)
-		{
-			getWorld()->addSquirtWeapon(new Squirt(getWorld(), right, getX(), getY())); //push to back of vector so it calls do something
-			break;
-		}
+		if (getWorld()->getSquirtsRemaining() > 0)
+			getWorld()->addSquirtWeapon(getDirection(), getX(), getY());
 	}
 }
 void DiggerMan::clearDirt() { getWorld()->removeDirt(getX(), getY()); }
@@ -113,7 +91,7 @@ void Protester::doSomething() {
 			if(!checkIfCanSeeDigMan())
 				moveProtester();
 			if (yellCoolDown == 0) {
-				if(getWorld()->canShout(getX(), getY()));
+				if(getWorld()->canShout(getX(), getY()))
 					yellCoolDown = 15;
 			}
 			break;
@@ -292,6 +270,7 @@ NUGGET IMPLEMENTATION
 int TempGoldNugget::getTicksLeftTillDeath() { return ticksLeftTillDeath; }		//returns how many ticks i have till this object dies
 void TempGoldNugget::decreaseLifeTicks() { ticksLeftTillDeath--; }				//decreases their ticks by one
 void TempGoldNugget::doSomething() {
+	if (!isAlive()) return;
 	if (getTicksLeftTillDeath() == 0) {
 		this->setVisible(false);
 		this->kill();
@@ -406,7 +385,7 @@ void Sonar::doSomething() {
 
 int Sonar::current_ticks() { return ticks; }
 void Sonar::decrement_tick() { if (ticks > 0) ticks--; }
-void Sonar::set_ticks() { ticks = getWorld()->numOfSonarTicks(); }
+void Sonar::set_ticks() { ticks = getWorld()->numOfSonarAndWaterTicks(); }
 
 /*
 ----------------------------
@@ -460,13 +439,33 @@ void Squirt::doSomething() {
 			}
 
 			else kill();
-			//if you can move in that direction
-			//increase distance_traveled by 1
-			//else kill()
-
 		}
 	}
+}
 
+/*
+----------------------------
+SQUIRT GUN IMPLEMENTATION
+----------------------------
+*/
 
+int WaterPool::getTicksLeftTillDeath() { return ticksLeftTillDeath; }		//returns how many ticks i have till this object dies
+void WaterPool::decreaseLifeTicks() { ticksLeftTillDeath--; }				//decreases their ticks by one
+void WaterPool::doSomething() {
+	if (!isAlive()) return;
+	if (getTicksLeftTillDeath() == 0) {
+		this->setVisible(false);
+		this->kill();
+	}
+	else {
+		if (getWorld()->DMinVicinity(3, this->getX(), this->getY())) {
+			setVisible(false);
+			this->kill();
+			getWorld()->playSound(SOUND_GOT_GOODIE);
+			getWorld()->incrementSquirts();
+			getWorld()->increaseScore(100);
 
+		}
+		decreaseLifeTicks();
+	}
 }

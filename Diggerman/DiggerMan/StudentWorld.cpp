@@ -7,14 +7,12 @@ int StudentWorld::init() {
 	GoldBait = 0; //Created to initialize the goldbait count to zero. This will also reset the amount of gold bait at the end of every level to zero -- not sure if that should be done. 
 	              //if it is not meant to be that way, we can use a flag to make sure it only runs once.
 	SonarKits = 1; //he is given 1 at the start of every level
+	SquirtsRemaining = 5;
 	dm = new DiggerMan(this);
 	dm->setVisible(true);
 	fillDirt();
-	//p = new Protester(this);
-	//p->setVisible(true);
-	int G = getLevel() * 25 + 300;
-	actors.push_back(new Sonar(0, 60, this));
-	actors.back()->setVisible(true);
+	
+	
 	generateField("Barrel");
 	generateField("PermNugget");
 	generateField("Boulder");
@@ -47,6 +45,19 @@ int StudentWorld::move() {
 			actors.erase(actors.begin() + i);
 		}	
 	}
+	int G = getLevel() * 25 + 300;
+	if (rand() % G + 1 == 1) {
+		if (rand() % 5 + 1 == 1) {
+			actors.push_back(new Sonar(0, 60, this));
+			actors.back()->setVisible(true);
+		}
+		else {
+			actors.push_back(new WaterPool(numOfSonarAndWaterTicks(), 0, 60, this)); //still need to make sure this spawns in a random spot with no dirt
+			actors.back()->setVisible(true);
+		}
+	}
+	//1 in G chance that either a sonar or water pool will spawn
+	// 4/5 chance of it being a water pool, 1/5 being a sonar kit
 	currentKey = 0;
 	return GWSTATUS_CONTINUE_GAME;
 }
@@ -98,6 +109,7 @@ void StudentWorld::removeDirt(int x, int y) {
 void StudentWorld::dropNugget() {
 	actors.push_back(new TempGoldNugget(200, dm->getX(), dm->getY(), this));  //Adjust tempNugg life to whatever yall want
 	actors.back()->setVisible(true);
+	decrementGoldBait();
 }
 int StudentWorld::numOfGoldBait() {
 	return GoldBait;
@@ -116,6 +128,7 @@ int StudentWorld::numOfSonarKits() {
 }
 void StudentWorld::sonarBLAST() { //activates all nuggets and barrels within a radius of 12
 	//playSound(SOUND_SONAR); //not in spec but found in code
+	playSound(SOUND_SONAR);
 	for (Actor *a : actors) {
 		if (DMinVicinity(12, a->getX(), a->getY()))
 			a->setVisible(true);
@@ -214,7 +227,7 @@ int StudentWorld::getCurKey() { return currentKey; }
 int StudentWorld::numOfGoldNuggets() { return max((int)(5 - getLevel()) / 2, 2); }
 int StudentWorld::numOfBoulders() { return min((int)(getLevel()) / 2 + 2, 7); }
 int StudentWorld::numOfOilBarrels() { return min((int)(2 + getLevel()), 18); }
-int StudentWorld::numOfSonarTicks() { return max(100, int(300-(10*getLevel()))); } //returns how many ticks until sonar kit disappears/expires
+int StudentWorld::numOfSonarAndWaterTicks() { return max(100, int(300-(10*getLevel()))); } //returns how many ticks until sonar kit disappears/expires
 bool StudentWorld::isThereDirtVisibleHere(int x, int y){ return dirt[x][y]; }
 void StudentWorld::cleanUp() {
 
@@ -304,10 +317,19 @@ bool StudentWorld::isABoulderHere(int x, int y) {
 }
 
 
-void StudentWorld::addSquirtWeapon(Squirt* s) { 
+void StudentWorld::addSquirtWeapon(GraphObject::Direction dir, int x, int y) { 
+	Squirt *s = new Squirt(this, dir, x, y);
 	actors.push_back(s); 
 	actors.back()->setVisible(true);
+	decrementSquirts();
 }
+
+void StudentWorld::incrementSquirts() { SquirtsRemaining += 5; }
+
+int StudentWorld::getSquirtsRemaining() { return SquirtsRemaining; }
+void StudentWorld::decrementSquirts() { SquirtsRemaining--; }
+
+
 
 
 /*

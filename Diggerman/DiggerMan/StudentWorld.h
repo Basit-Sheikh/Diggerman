@@ -30,7 +30,7 @@ public:
 	int numOfBoulders();
 	int numOfGoldNuggets();
 	int numOfOilBarrels();
-	int numOfSonarTicks();
+	int numOfSonarAndWaterTicks(); //Sonar and Water have the same formula
 	bool isThereDirtVisibleHere(int x, int y);
 	bool DMinVicinity(int range, int x, int y);
 	bool ProtesterinVicinity(int range, int x, int y, char type);
@@ -48,6 +48,9 @@ public:
 	void decrementSonarKit();
 	void incrementSonarKit();
 	int numOfSonarKits();
+	int getSquirtsRemaining();
+	void decrementSquirts();
+	void incrementSquirts();
 	void sonarBLAST();
 	bool isDirtAboveMe(int x, int y, int z);
 	bool isDirtLeftOfMe(int x, int y, int z);
@@ -58,11 +61,13 @@ public:
 	bool canShout(int x, int y);
 	bool isMoveableLocForProtester(int x, int y);
 	bool isABoulderHere(int x, int y);
-	void addSquirtWeapon(Squirt* s);
+	void addSquirtWeapon(GraphObject::Direction dir, int x, int y);
+
 private:
 	int SonarKits;
+	int GoldBait;
+	int SquirtsRemaining;
 	int currentKey;
-	int GoldBait; //note : static variables initalized to zero by default
 	vector<Actor *> actors;
 	DiggerMan* dm;
 	Dirt* dirt[64][64];

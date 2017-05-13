@@ -166,6 +166,19 @@ private:
 	bool found = false;
 };
 
+
+class WaterPool : public Goodies {
+public:
+	WaterPool(int deathTicks, int randX, int randY, StudentWorld* sw) :
+		Goodies(sw, IMID_WATER_POOL, randX, randY), ticksLeftTillDeath(deathTicks) {};
+	int getTicksLeftTillDeath();
+	void decreaseLifeTicks();
+	virtual void doSomething();
+
+private:
+	int ticksLeftTillDeath;
+};
+
 class Squirt : public Actor { //cannot inherit from goodies because depth is 1 not 2
 public:
 	Squirt(StudentWorld* sw, Direction d, int x, int y) :
@@ -177,6 +190,8 @@ public:
 private:
 	int squirt_distance;
 };
+
+
 
 
 #endif // ACTOR_H_
