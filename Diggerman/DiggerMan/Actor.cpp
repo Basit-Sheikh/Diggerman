@@ -315,8 +315,18 @@ BOULDER IMPLEMENTATION
 void Boulder::doSomething() {
 	switch (currentState) {
 	case falling:
-		if (getY() != 0 && !getWorld()->isDirtUnderMe(getX(), getY(), 0))
+		if (getWorld()->isThereContact(getWorld()->dmXlocation(), getWorld()->dmYlocation(),getX(),getY())) 
+		{
+			getWorld()->killDm();
+			currentState = done;
+			this->setVisible(false);
+			this->kill();
+		}
+		getWorld()->killProtestorsHere(getX(), getY()); //boulder can continue to fall after it hits a protester,idk why i split the functions up,can merge later
+
+		if (getY() != 0 && !getWorld()->isDirtUnderMe(getX(), getY(), 0)) {
 			moveTo(getX(), getY() - 1);
+		}
 		else {
 			currentState = done;
 			this->setVisible(false);

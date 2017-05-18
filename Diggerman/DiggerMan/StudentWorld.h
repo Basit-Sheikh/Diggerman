@@ -1,4 +1,4 @@
-#ifndef STUDENTWORLD_H_
+ #ifndef STUDENTWORLD_H_
 #define STUDENTWORLD_H_
 
 #include "GameWorld.h"
@@ -62,6 +62,10 @@ public:
 	bool isMoveableLocForProtester(int x, int y);
 	bool isABoulderHere(int x, int y);
 	void addSquirtWeapon(GraphObject::Direction dir, int x, int y);
+	void killProtestorsHere(int x, int y); 
+	void killDm() { dm->decHealth(100); }
+	bool isThereContact(int x, int y, int x2, int y2);
+	bool dirtlessSpots(int x, int y);
 
 private:
 	int SonarKits;

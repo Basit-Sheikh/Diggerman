@@ -32,6 +32,7 @@ int StudentWorld::move() {
 	if (dm->getHealth() <= 0) {
 		decLives();
 		cleanUp();
+		playSound(SOUND_PLAYER_GIVE_UP);
 		return GWSTATUS_PLAYER_DIED;
 	}
 	dm->doSomething();
@@ -52,7 +53,19 @@ int StudentWorld::move() {
 			actors.back()->setVisible(true);
 		}
 		else {
-			actors.push_back(new WaterPool(numOfSonarAndWaterTicks(), 0, 60, this)); //still need to make sure this spawns in a random spot with no dirt
+			int randX = randXGenerator();
+			int randY = randYGenerator("");		
+			int ct = 0;
+			while (true) {
+				cout << "This is ct:" << ct << endl;
+				if (dirtlessSpots(randX,randY) && !isABoulderHere(randX, randY)) { //sometimes on the 2nd or 3rd life, this will infinite loop
+					break;
+				}
+				randX = randXGenerator();
+				randY = randYGenerator("");
+				ct++;
+			}
+			actors.push_back(new WaterPool(numOfSonarAndWaterTicks(), randX, randY, this)); 
 			actors.back()->setVisible(true);
 		}
 	}
@@ -60,6 +73,15 @@ int StudentWorld::move() {
 	// 4/5 chance of it being a water pool, 1/5 being a sonar kit
 	currentKey = 0;
 	return GWSTATUS_CONTINUE_GAME;
+}
+bool StudentWorld::dirtlessSpots(int x, int y) {
+	for (int i = 0; i < 4; i++) {
+		for (int k = 0; k < 4; k++) {
+			if ((isThereDirtVisibleHere(x + i, y + k)))
+				return false;
+		}
+	}
+	return true;
 }
 bool StudentWorld::DMinVicinity(int range, int x, int y) {
 	double dist = sqrt(pow(dm->getX() - x, 2) + pow(dm->getY() - y, 2));
@@ -138,7 +160,7 @@ void StudentWorld::sonarBLAST() { //activates all nuggets and barrels within a r
 void StudentWorld::incrementGoldBait() { GoldBait++; }
 int StudentWorld::randXGenerator() {
 	int x = rand() % 61;
-	while (x > 26 && x < 34)
+	while (x > 25 && x < 35)
 		x = rand() % 61;
 	return x;
 }
@@ -160,6 +182,8 @@ bool StudentWorld::goodSpot(int randX,int randY) {
 		}
 		return false;
 }
+
+
 bool StudentWorld::farAway(int x,int y) {
 	for (Actor* a : actors) {
 		if( (sqrt(pow(x - a->getX(), 2) + pow(y - a->getY(), 2))) < 7) {  //6 unit space between each spawned object
@@ -330,24 +354,32 @@ int StudentWorld::getSquirtsRemaining() { return SquirtsRemaining; }
 void StudentWorld::decrementSquirts() { SquirtsRemaining--; }
 
 
+void StudentWorld::killProtestorsHere(int x, int y) {
+		for (Actor *p : actors) {
+			if (p->isRegProtester()) {
+				if (isThereContact(p->getX(), p->getY(), x, y)) {
+					dynamic_cast<Protester*>(p)->decHealth(100);
+				}
+			}
+		}	
+}
+
+bool StudentWorld::isThereContact(int x, int y, int x2, int y2) {
+
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			for (int k = 0; k < 4; k++) {
+				for (int z = 0; z < 3; z++) {
+					if (x + i == x2+k  && y + j == y2+z)
+						return true;
+				}
+			}
+		}
+	}
+	return false;
+}
 
 
-/*
---------------------------------------------
-PLS DONT DELETE---NOTES FOR PERM GOLD NUGGET
----------------------------------------------
-
----How to make sure supposed random location has dirt that will cover the nugget
--get rand x and y values of gold 
--first check if that random location is ok
--then generate the four corner x and y values as if it were toe xist there
--then go through vector(?) of dirts and see if dere is dirt with each of those values
--if there is, then we know that the location has dirt covering it from all 4 sides
 
 
-----checking distance from all other objects
-
-
-
-*/
 
