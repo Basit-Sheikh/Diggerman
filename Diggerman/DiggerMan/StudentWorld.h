@@ -25,7 +25,7 @@ public:
 	virtual void cleanUp();
 	int getCurKey();
 	void fillDirt();
-	void removeDirt(int x, int y);
+	bool removeDirt(int x, int y);
 	void HUD();
 	int numOfBoulders();
 	int numOfGoldNuggets();
@@ -60,7 +60,7 @@ public:
 	bool getDistDigManOnY(int x, int y, int& dis);
 	bool canShout(int x, int y);
 	bool isMoveableLocForProtester(int x, int y);
-	bool isABoulderHere(int x, int y);
+	bool isABoulderHere(int x, int y, GraphObject::Direction d);
 	void addSquirtWeapon(GraphObject::Direction dir, int x, int y);
 
 private:

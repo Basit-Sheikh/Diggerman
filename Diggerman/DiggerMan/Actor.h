@@ -44,7 +44,7 @@ public:
 	virtual void doSomething();
 private:
 	void moveDiggerMan();
-	void clearDirt();
+	bool clearDirt();
 };
 
 class Protester : public Character {
@@ -106,11 +106,13 @@ private:
 
 class Boulder : public Actor {
 public:
+	enum State { stable, falling, waiting, done };
 	Boulder(int x, int y, StudentWorld* sw) : 
 		Actor(IMID_BOULDER, x, y, down, 1.0, 1, sw), currentState(stable), tickCount(0){ };
 	virtual void doSomething();
+	State getState() const { return currentState; }
 private:
-	enum State { stable, falling, waiting, done };
+	
 	State currentState;
 	int tickCount;
 

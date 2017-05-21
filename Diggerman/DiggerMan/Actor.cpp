@@ -24,7 +24,9 @@ void DiggerMan::doSomething() {
 	if (getWorld()->getLives() > 0) {
 		moveDiggerMan();
 		//cout << getX() << " " << getY() << endl;         <--- good test to see diggermans position when testing ranges
-		clearDirt();
+		if (clearDirt()) {
+			getWorld()->playSound(SOUND_DIG);
+		}
 	}
 }
 void DiggerMan::moveDiggerMan() {
@@ -33,25 +35,25 @@ void DiggerMan::moveDiggerMan() {
 	case KEY_PRESS_DOWN:
 		if (getDirection() != down)
 			setDirection(down);
-		else if (getY() > 0 && !getWorld()->isABoulderHere(getX(), getY() -1 ))
+		else if (getY() > 0 && !getWorld()->isABoulderHere(getX(), getY(), getDirection()))
 			moveTo(getX(), getY() - 1);
 		break;
 	case KEY_PRESS_LEFT:
 		if (getDirection() != left)
 			setDirection(left);
-		else if (getX() > 0 && !getWorld()->isABoulderHere(getX() - 1, getY()))
+		else if (getX() > 0 && !getWorld()->isABoulderHere(getX(), getY(), getDirection()))
 			moveTo(getX() - 1, getY());
 		break;
 	case KEY_PRESS_RIGHT:
 		if (getDirection() != right)
 			setDirection(right);
-		else if (getX() < VIEW_WIDTH - 4 && !getWorld()->isABoulderHere(getX() + 1, getY()))
+		else if (getX() < VIEW_WIDTH - 4 && !getWorld()->isABoulderHere(getX(), getY(), getDirection()))
 			moveTo(getX() + 1, getY());
 		break;
 	case KEY_PRESS_UP:
 		if (getDirection() != up)
 			setDirection(up);
-		else if (getY() < VIEW_HEIGHT - 4 && !getWorld()->isABoulderHere(getX(), getY() + 1))
+		else if (getY() < VIEW_HEIGHT - 4 && !getWorld()->isABoulderHere(getX(), getY(), getDirection()))
 			moveTo(getX(), getY() + 1);
 		break;
 	case KEY_PRESS_TAB:
@@ -67,7 +69,7 @@ void DiggerMan::moveDiggerMan() {
 			getWorld()->addSquirtWeapon(getDirection(), getX(), getY());
 	}
 }
-void DiggerMan::clearDirt() { getWorld()->removeDirt(getX(), getY()); }
+bool DiggerMan::clearDirt() {return getWorld()->removeDirt(getX(), getY()); }
 /*
 ----------------------------
 PROTESTER IMPLEMENTATION 
@@ -196,7 +198,7 @@ void Protester::goBackToSafeSpace(){
 	else {
 		for (int i = 0; i < VIEW_WIDTH; i++) {
 			for (int j = 0; j < VIEW_HEIGHT; j++) {
-				if (!getWorld()->isMoveableLocForProtester(i, j) || getWorld()->isABoulderHere(i, j))
+				if (!getWorld()->isMoveableLocForProtester(i, j) || getWorld()->isABoulderHere(i, j, none))
 					bfsArray[i][j] = -2;
 				else
 					bfsArray[i][j] = -1;
@@ -409,14 +411,14 @@ void Squirt::doSomething() {
 
 	else {
 		if (getDirection() == up) {
-			if (!getWorld()->isDirtAboveMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance) && !getWorld()->isABoulderHere(getX(), getY())) {
+			if (!getWorld()->isDirtAboveMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance) && !getWorld()->isABoulderHere(getX(), getY(), getDirection())) {
 				this->moveTo(getWorld()->dmXlocation(), getWorld()->dmYlocation()+1 + squirt_distance);
 				incrementDistance();
 			}
 			else kill();
 		}
 		else if (getDirection() == down) {
-			if (!getWorld()->isDirtUnderMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance) && !getWorld()->isABoulderHere(getX(), getY())) {
+			if (!getWorld()->isDirtUnderMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance) && !getWorld()->isABoulderHere(getX(), getY(), getDirection())) {
 				this->moveTo(getWorld()->dmXlocation(), getWorld()->dmYlocation()-1 - squirt_distance);
 				incrementDistance();
 			}
@@ -424,7 +426,7 @@ void Squirt::doSomething() {
 
 		}
 		else if (getDirection() == left) {
-			if (!getWorld()->isDirtLeftOfMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance) && !getWorld()->isABoulderHere(getX(),getY())) {
+			if (!getWorld()->isDirtLeftOfMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance) && !getWorld()->isABoulderHere(getX(),getY(), getDirection())) {
 				this->moveTo(getWorld()->dmXlocation()-1 - squirt_distance, getWorld()->dmYlocation());
 				incrementDistance();
 			}
@@ -433,7 +435,7 @@ void Squirt::doSomething() {
 
 		}
 		else if (getDirection() == right) {
-			if (!getWorld()->isDirtRightOfMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance) && !getWorld()->isABoulderHere(getX(), getY())) {
+			if (!getWorld()->isDirtRightOfMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance) && !getWorld()->isABoulderHere(getX(), getY(), getDirection())) {
 				this->moveTo(getWorld()->dmXlocation() + 1 + squirt_distance, getWorld()->dmYlocation());
 				incrementDistance();
 			}

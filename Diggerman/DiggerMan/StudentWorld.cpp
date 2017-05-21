@@ -91,20 +91,22 @@ void StudentWorld::fillDirt(){
 		}
 	}
 }
-void StudentWorld::removeDirt(int x, int y) {
+bool StudentWorld::removeDirt(int x, int y) {
+	bool dugDirt = false;
 	for (int i = x; i < x + 4; i++) {
 		for (int j = y; j < y + 4; j++) {
 			if (dirt[i][j]) {
 				/*****************************************************
 				Dig sound is kind of loud and somewhat masks other sound effects, comment out the playSound function call directly below to remove it.
 				***************************************************/
-				playSound(SOUND_DIG);
+				dugDirt = true;
 				Dirt* temp = dirt[i][j];
 				dirt[i][j] = nullptr;
 				delete temp;
 			}
 		}
 	}
+	return dugDirt;
 }
 void StudentWorld::dropNugget() {
 	actors.push_back(new TempGoldNugget(200, dm->getX(), dm->getY(), this));  //Adjust tempNugg life to whatever yall want
@@ -302,12 +304,22 @@ bool StudentWorld::isMoveableLocForProtester(int x, int y){
 	}
 	return true;
 }
-bool StudentWorld::isABoulderHere(int x, int y) {
+bool StudentWorld::isABoulderHere(int x, int y, GraphObject::Direction d) {
 	for (auto a : actors) {
-		if (typeid(*a) == typeid(Boulder)) {
+		if (typeid(*a) == typeid(Boulder) && dynamic_cast<Boulder*>(a)->getState() != Boulder::State::falling) {
 			for (int i = 0; i < 4; i++) {
 				for (int j = 0; j < 4; j++) {
-					if (a->getX() + i == x && a->getY() + j == y)
+					if (d != GraphObject::Direction::none) {
+						if (d == GraphObject::Direction::right && a->getX() == x + 4 && a->getY() + i == y + j)
+							return true;
+						else if (d == GraphObject::Direction::left && a->getX() + 3 == x - 1 && a->getY() + i == y + j)
+							return true;
+						else if (d == GraphObject::Direction::down && a->getX() + i == x + j && a->getY() + 3 == y - 1)
+							return true;
+						else if (d == GraphObject::Direction::up && a->getX() + i == x + j && a->getY() == y + 4)
+							return true;
+					}
+					else if (a->getX() + i == x && a->getY() + j == y)
 						return true;
 				}
 			}
@@ -315,6 +327,7 @@ bool StudentWorld::isABoulderHere(int x, int y) {
 	}
 	return false;
 }
+
 
 
 void StudentWorld::addSquirtWeapon(GraphObject::Direction dir, int x, int y) { 
