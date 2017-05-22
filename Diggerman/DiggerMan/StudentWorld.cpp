@@ -11,8 +11,7 @@ int StudentWorld::init() {
 	dm = new DiggerMan(this);
 	dm->setVisible(true);
 	fillDirt();
-	
-	
+
 	generateField("Barrel");
 	generateField("PermNugget");
 	generateField("Boulder");
@@ -53,11 +52,14 @@ int StudentWorld::move() {
 			actors.back()->setVisible(true);
 		}
 		else {
+			//1 in G chance that either a sonar or water pool will spawn
+			// 4/5 chance of it being a water pool, 1/5 being a sonar kit
 			int randX = randXGenerator();
 			int randY = randYGenerator("");		
 			int ct = 0;
 			while (true) {
-				cout << "This is ct:" << ct << endl;
+				//cout << "This is ct:" << ct << endl;
+ 				cout << randX << "  " << randY << endl;
 				if (dirtlessSpots(randX,randY) && !isABoulderHere(randX, randY, GraphObject::Direction::none)) { //sometimes on the 2nd or 3rd life, this will infinite loop
 					break;
 				}
@@ -69,8 +71,6 @@ int StudentWorld::move() {
 			actors.back()->setVisible(true);
 		}
 	}
-	//1 in G chance that either a sonar or water pool will spawn
-	// 4/5 chance of it being a water pool, 1/5 being a sonar kit
 	currentKey = 0;
 	return GWSTATUS_CONTINUE_GAME;
 }
@@ -93,7 +93,10 @@ bool StudentWorld::ProtesterinVicinity(int range, int x, int y, char type) {
 			double dist = sqrt(pow(a->getX() - x, 2) + pow(a->getY() - y, 2));
 			if (dist <= range) {
 				if (type == 'n') dynamic_cast<Protester*>(a)->decHealth(10);       //nugget bait
-				else if (type == 's') dynamic_cast<Protester*>(a)->decHealth(2);   //squirt hit
+				else if (type == 's') {
+					dynamic_cast<Protester*>(a)->decHealth(2);   //squirt hit
+					dynamic_cast<Protester*>(a)->stun(); //squirt stun
+				}
 				return true;
 			}
 			else return false;
@@ -254,6 +257,7 @@ int StudentWorld::numOfGoldNuggets() { return max((int)(5 - getLevel()) / 2, 2);
 int StudentWorld::numOfBoulders() { return min((int)(getLevel()) / 2 + 2, 7); }
 int StudentWorld::numOfOilBarrels() { return min((int)(2 + getLevel()), 18); }
 int StudentWorld::numOfSonarAndWaterTicks() { return max(100, int(300-(10*getLevel()))); } //returns how many ticks until sonar kit disappears/expires
+//int StudentWorld::timeStunned() {return max(50, int(100 - (10 * getLevel())));}
 bool StudentWorld::isThereDirtVisibleHere(int x, int y){ return dirt[x][y]; }
 void StudentWorld::cleanUp() {
 

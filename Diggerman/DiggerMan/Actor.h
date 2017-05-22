@@ -21,7 +21,6 @@ public:
 protected:
 private:
 	StudentWorld* world;
-    bool isDiggerManNearMe(int x,int y);
 	bool alive;
 
 };
@@ -49,7 +48,7 @@ private:
 
 class Protester : public Character {
 protected:
-	enum State { rest, move, annoyed, follow, start };
+	enum State { rest, move, annoyed, stunned, follow, start };
 
 public:
 	Protester(StudentWorld * sw) :
@@ -58,13 +57,15 @@ public:
 	int getTicksBetweenMoveCount();
 	int getRandomDirMoveTickCount();
 	void goBackToSafeSpace();
+	void stun();
 	virtual bool isRegProtester() { return true;}
-	void setStateAnnoyed() { currentState = annoyed; }
+	void setStateAnnoyed();
 private:
 	State currentState;
 	int moveCount;
 	int waitCount;
 	int yellCoolDown;
+	int time_stunned;
 	bool quickPathFound;
 	Direction pickRandomDirection() {
 		int i = rand() % 4;

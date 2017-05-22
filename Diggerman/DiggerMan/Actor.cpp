@@ -4,19 +4,6 @@
 
 /*
 ----------------------------
-ACTOR IMPLEMENTATION
-----------------------------
-*/
-bool Actor::isDiggerManNearMe(int x, int y) { 
-	if (sqrt(((x - getX()) ^ 2) + ((y - getY()) ^ 2)) <= 4)
-		return true;
-	
-	return true; 
-}
-
-
-/*
-----------------------------
 DIGGERMAN IMPLEMENTATION 
 ----------------------------
 */
@@ -77,7 +64,7 @@ PROTESTER IMPLEMENTATION
 */
 void Protester::doSomething() {
 	if (isAlive()) {
-		if (getHealth() < 0 && waitCount <=0)
+		if (getHealth() <= 0 && waitCount <=0)
 			currentState = annoyed;
 		//rest, move, annoyed, follow, start
 		switch (currentState) {
@@ -97,6 +84,12 @@ void Protester::doSomething() {
 					yellCoolDown = 15;
 			}
 			break;
+		case stunned:
+			if (time_stunned == 0 || getHealth() <= 0)
+				setStateAnnoyed();
+			time_stunned--;
+			break;
+		
 		case annoyed:   //annoyed state, goBackToSafeSpace()
 			if (getX() == 60 && getY() == 60)
 				kill();
@@ -261,6 +254,15 @@ void Protester::moveProtester(){
 	}
 }
 
+void Protester::setStateAnnoyed() {
+	getWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
+	currentState = annoyed;
+}
+void Protester::stun() {
+	time_stunned = max(50, int(100 - (10 * getWorld()->getLevel())));
+	currentState = stunned; 
+}
+
 /*
 ----------------------------
 NUGGET IMPLEMENTATION
@@ -412,6 +414,7 @@ void Squirt::doSomething() {
 	if (getWorld()->ProtesterinVicinity(3, getX(), getY(), 's'))
 	{
 		getWorld()->playSound(SOUND_PROTESTER_ANNOYED);
+		this->kill();
 
 	}
 	if (squirt_distance == 8) {
@@ -457,7 +460,7 @@ void Squirt::doSomething() {
 
 /*
 ----------------------------
-SQUIRT GUN IMPLEMENTATION
+WATER POOL IMPLEMENTATION
 ----------------------------
 */
 
