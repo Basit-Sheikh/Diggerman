@@ -156,7 +156,7 @@ bool Protester::checkIfCanSeeDigMan() {
 			return true;
 		}
 	}
-
+	return false;
 }
 void Protester::followDMHelper(int x, int y, Direction d) {
 	setDirection(d);

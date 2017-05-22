@@ -58,7 +58,7 @@ int StudentWorld::move() {
 			int ct = 0;
 			while (true) {
 				cout << "This is ct:" << ct << endl;
-				if (dirtlessSpots(randX,randY) && !isABoulderHere(randX, randY)) { //sometimes on the 2nd or 3rd life, this will infinite loop
+				if (dirtlessSpots(randX,randY) && !isABoulderHere(randX, randY, GraphObject::Direction::none)) { //sometimes on the 2nd or 3rd life, this will infinite loop
 					break;
 				}
 				randX = randXGenerator();
