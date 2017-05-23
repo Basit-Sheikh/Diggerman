@@ -87,6 +87,19 @@ private:
 	int bfsArray[64][64];
 	void print();
 };
+//class HardcoreProtestor : public Protester {
+//
+//public:
+//	HardcoreProtestor(StudentWorld *sw) :Protester(sw) {}
+//	virtual void doSomething();
+//	virtual bool isRegProtester() { return false; }
+//	//modify goBackToSafeSpace to find shortest path to diggerman if he's within the radius specified by the spec sheet
+//	//some object interactions are different so I need to double check
+//
+//private:
+//	//read specs (don't think he needs anything else)
+//
+//};
 class Dirt : public Actor {
 public:
 	Dirt(int startX, int startY, StudentWorld* sw) :

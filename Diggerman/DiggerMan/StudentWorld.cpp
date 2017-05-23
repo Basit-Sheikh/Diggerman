@@ -54,16 +54,15 @@ int StudentWorld::move() {
 		else {
 			//1 in G chance that either a sonar or water pool will spawn
 			// 4/5 chance of it being a water pool, 1/5 being a sonar kit
-			int randX = randXGenerator();
+			int randX = randXGenerator("pool");
 			int randY = randYGenerator("");		
 			int ct = 0;
 			while (true) {
-				//cout << "This is ct:" << ct << endl;
- 				cout << randX << "  " << randY << endl;
-				if (dirtlessSpots(randX,randY) && !isABoulderHere(randX, randY, GraphObject::Direction::none)) { //sometimes on the 2nd or 3rd life, this will infinite loop
+				
+				if (dirtlessSpots(randX,randY) && !isABoulderHere(randX, randY, GraphObject::Direction::none)) { 
 					break;
 				}
-				randX = randXGenerator();
+				randX = randXGenerator("pool");
 				randY = randYGenerator("");
 				ct++;
 			}
@@ -163,10 +162,12 @@ void StudentWorld::sonarBLAST() { //activates all nuggets and barrels within a r
 	decrementSonarKit();
 }
 void StudentWorld::incrementGoldBait() { GoldBait++; }
-int StudentWorld::randXGenerator() {
+int StudentWorld::randXGenerator(string type) {
 	int x = rand() % 61;
-	while (x > 25 && x < 35)
-		x = rand() % 61;
+	if (!(type == "pool")) {
+		while (x > 25 && x < 35)
+			x = rand() % 61;
+	}
 	return x;
 }
 int StudentWorld::randYGenerator(string type) {
@@ -211,7 +212,7 @@ void StudentWorld::generateField(string type){
 	//Generating items in acceptable situations
 	//-----------------------------------------------
 	for (int i = 0; i < spawn_amount; i++) {
-		int randX = randXGenerator();
+		int randX = randXGenerator("");
 		int randY = randYGenerator(type);
 		int ct = 0;
 		while (true) {
@@ -223,7 +224,7 @@ void StudentWorld::generateField(string type){
 				if (farAway(randX, randY))
 					break;
 			}
-			randX = randXGenerator();
+			randX = randXGenerator("");
 			randY = randYGenerator(type);
 			ct++;
 		}

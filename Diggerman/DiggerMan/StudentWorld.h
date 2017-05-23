@@ -39,7 +39,7 @@ public:
 	int dmYlocation() { return dm->getY(); }
 	void generateField(string type);
 	int randYGenerator(string type);
-	int randXGenerator();
+	int randXGenerator(string type);
 	bool goodSpot(int randX, int randY);
 	bool farAway(int x, int y);
 	void dropNugget();
