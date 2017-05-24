@@ -31,7 +31,6 @@ public:
 	int numOfGoldNuggets();
 	int numOfOilBarrels();
 	int numOfSonarAndWaterTicks(); //Sonar and Water have the same formula
-	//int timeStunned();
 	bool isThereDirtVisibleHere(int x, int y);
 	bool DMinVicinity(int range, int x, int y);
 	bool ProtesterinVicinity(int range, int x, int y, char type);

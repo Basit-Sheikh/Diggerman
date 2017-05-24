@@ -30,7 +30,6 @@ int StudentWorld::move() {
 
 	if (dm->getHealth() <= 0) {
 		decLives();
-		cleanUp();
 		playSound(SOUND_PLAYER_GIVE_UP);
 		return GWSTATUS_PLAYER_DIED;
 	}
@@ -95,6 +94,8 @@ bool StudentWorld::ProtesterinVicinity(int range, int x, int y, char type) {
 				else if (type == 's') {
 					dynamic_cast<Protester*>(a)->decHealth(2);   //squirt hit
 					dynamic_cast<Protester*>(a)->stun(); //squirt stun
+					if (dynamic_cast<Protester*>(a)->getHealth() <= 0)
+						playSound(SOUND_PROTESTER_GIVE_UP);
 				}
 				return true;
 			}
@@ -179,28 +180,28 @@ int StudentWorld::randYGenerator(string type) {
 	}
 	return y;
 }
-bool StudentWorld::goodSpot(int randX,int randY) {		
-		if (isThereDirtVisibleHere(randX, randY)) {
-			if (!isThereDirtVisibleHere(randX, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY)) {
-				return false;
-			}
-			return true;
+bool StudentWorld::goodSpot(int randX, int randY) {
+	if (isThereDirtVisibleHere(randX, randY)) {
+		if (!isThereDirtVisibleHere(randX, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY + 3) || !isThereDirtVisibleHere(randX + 3, randY)) {
+			return false;
 		}
-		return false;
+		return true;
+	}
+	return false;
 }
 
 
-bool StudentWorld::farAway(int x,int y) {
+bool StudentWorld::farAway(int x, int y) {
 	for (Actor* a : actors) {
-		if( (sqrt(pow(x - a->getX(), 2) + pow(y - a->getY(), 2))) < 7) {  //6 unit space between each spawned object
+		if ((sqrt(pow(x - a->getX(), 2) + pow(y - a->getY(), 2))) < 7) {  //6 unit space between each spawned object
 			return false;
 		}
 	}
 	return true;
 }
-void StudentWorld::generateField(string type){
-	int spawn_amount;
-	if      (type == "PermNugget") spawn_amount = numOfGoldNuggets();
+void StudentWorld::generateField(string type) {
+	int spawn_amount = 0;
+	if (type == "PermNugget") spawn_amount = numOfGoldNuggets();
 	else if (type == "Barrel")     spawn_amount = numOfOilBarrels();
 	else if (type == "Boulder")    spawn_amount = numOfBoulders();
 	else if (type == "RegProtester") {
@@ -228,15 +229,15 @@ void StudentWorld::generateField(string type){
 			randY = randYGenerator(type);
 			ct++;
 		}
-		
+
 		if (type == "PermNugget") {
-			actors.push_back(new PermGoldNugget(this, randX, randY)); 
+			actors.push_back(new PermGoldNugget(this, randX, randY));
 			actors.back()->setVisible(true);
-		} 
+		}
 		else if (type == "Barrel") {
-			actors.push_back(new Barrel(randX, randY, this)); 
+			actors.push_back(new Barrel(randX, randY, this));
 			actors.back()->setVisible(true);
-		}		
+		}
 		else if (type == "Boulder") {
 			actors.push_back(new Boulder(randX, randY, this));
 			removeDirt(randX, randY);                          //remove dirt from where the boulder spawns
@@ -257,9 +258,9 @@ int StudentWorld::getCurKey() { return currentKey; }
 int StudentWorld::numOfGoldNuggets() { return max((int)(5 - getLevel()) / 2, 2); }
 int StudentWorld::numOfBoulders() { return min((int)(getLevel()) / 2 + 2, 7); }
 int StudentWorld::numOfOilBarrels() { return min((int)(2 + getLevel()), 18); }
-int StudentWorld::numOfSonarAndWaterTicks() { return max(100, int(300-(10*getLevel()))); } //returns how many ticks until sonar kit disappears/expires
+int StudentWorld::numOfSonarAndWaterTicks() { return max(100, int(300 - (10 * getLevel()))); } //returns how many ticks until sonar kit disappears/expires
 //int StudentWorld::timeStunned() {return max(50, int(100 - (10 * getLevel())));}
-bool StudentWorld::isThereDirtVisibleHere(int x, int y){ return dirt[x][y]; }
+bool StudentWorld::isThereDirtVisibleHere(int x, int y) { return dirt[x][y]; }
 void StudentWorld::cleanUp() {
 
 	//delete dirt
@@ -271,15 +272,16 @@ void StudentWorld::cleanUp() {
 		}
 	}
 	//delete actors
-	for (int i = 0; i < actors.size(); i++) {
-		delete actors[i];
-		actors.erase(actors.begin() + i);
-	}
+	for (int i = 0; i < actors.size(); i++)
+		delete actors[i];                   //delete content first to prevent mem leak ##DO NOT REMOVE##
+	actors.clear();							//then erase everything in the vector
 
 	//delete diggerman last
 	DiggerMan *temp2 = dm;
 	dm = nullptr;
 	delete temp2;
+
+	cout << actors.size();
 }
 bool StudentWorld::isDirtAboveMe(int x, int y, int z) {
 	return (isThereDirtVisibleHere(x, y + 4 + z) || isThereDirtVisibleHere(x + 1, y + 4 + z) ||
@@ -377,6 +379,7 @@ void StudentWorld::killProtestorsHere(int x, int y) {
 			if (p->isRegProtester()) {
 				if (isThereContact(p->getX(), p->getY(), x, y)) {
 					dynamic_cast<Protester*>(p)->decHealth(100);
+					playSound(SOUND_PROTESTER_GIVE_UP);
 				}
 			}
 		}	

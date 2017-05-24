@@ -64,7 +64,7 @@ PROTESTER IMPLEMENTATION
 */
 void Protester::doSomething() {
 	if (isAlive()) {
-		if (getHealth() <= 0 && waitCount <=0)
+		if (getHealth() <= 0 && waitCount <= 0)
 			currentState = annoyed;
 		//rest, move, annoyed, follow, start
 		switch (currentState) {
@@ -77,10 +77,10 @@ void Protester::doSomething() {
 		case move:		//randomly moving state
 			//moveProtester is a helper function for do something
 			//just moves protester, moved to func for readablility of doSomething()
-			if(!checkIfCanSeeDigMan())
+			if (!checkIfCanSeeDigMan())
 				moveProtester();
 			if (yellCoolDown == 0) {
-				if(getWorld()->canShout(getX(), getY()))
+				if (getWorld()->canShout(getX(), getY()))
 					yellCoolDown = 15;
 			}
 			break;
@@ -255,7 +255,6 @@ void Protester::moveProtester(){
 }
 
 void Protester::setStateAnnoyed() {
-	getWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
 	currentState = annoyed;
 }
 void Protester::stun() {
