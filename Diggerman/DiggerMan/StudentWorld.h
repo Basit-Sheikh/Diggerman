@@ -47,6 +47,8 @@ public:
 	int numOfGoldBait();
 	void decrementSonarKit();
 	void incrementSonarKit();
+	int OilBarrelsRemaining();
+	void decOilBarrels();
 	int numOfSonarKits();
 	int getSquirtsRemaining();
 	void decrementSquirts();
@@ -71,6 +73,7 @@ private:
 	int SonarKits;
 	int GoldBait;
 	int SquirtsRemaining;
+	int OilBarrels;
 	int currentKey;
 	vector<Actor *> actors;
 	DiggerMan* dm;

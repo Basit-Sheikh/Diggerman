@@ -368,6 +368,8 @@ void Barrel::doSomething(){
 	if (getWorld()->DMinVicinity(3, getX(), getY())) {
 		getWorld()->playSound(SOUND_FOUND_OIL);
 		getWorld()->increaseScore(1000);
+		getWorld()->decOilBarrels();
+		cout << getWorld()->OilBarrelsRemaining() << endl;
 		this->setVisible(false);
 		this->kill();
 	}
@@ -410,11 +412,9 @@ void Squirt::doSomething() {
 	if (!isAlive()) return;
 
 	//protestorinvicinity checks if he is in range, and if he is, it damages him.
-	if (getWorld()->ProtesterinVicinity(3, getX(), getY(), 's'))
-	{
+	if (getWorld()->ProtesterinVicinity(3, getX(), getY(), 's')){
 		getWorld()->playSound(SOUND_PROTESTER_ANNOYED);
 		this->kill();
-
 	}
 	if (squirt_distance == 8) {
 		this->kill();

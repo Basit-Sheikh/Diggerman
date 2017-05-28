@@ -7,15 +7,15 @@ int StudentWorld::init() {
 	GoldBait = 0; //Created to initialize the goldbait count to zero. This will also reset the amount of gold bait at the end of every level to zero -- not sure if that should be done. 
 	              //if it is not meant to be that way, we can use a flag to make sure it only runs once.
 	SonarKits = 1; //he is given 1 at the start of every level
+	OilBarrels = numOfOilBarrels();
 	SquirtsRemaining = 5;
 	dm = new DiggerMan(this);
 	dm->setVisible(true);
 	fillDirt();
-
 	generateField("Barrel");
 	generateField("PermNugget");
-	generateField("Boulder");
 	generateField("RegProtester");
+	generateField("Boulder");
 	return GWSTATUS_CONTINUE_GAME;
 }
 int StudentWorld::move() {
@@ -32,6 +32,10 @@ int StudentWorld::move() {
 		decLives();
 		playSound(SOUND_PLAYER_GIVE_UP);
 		return GWSTATUS_PLAYER_DIED;
+	}
+	if (OilBarrelsRemaining() == 0) {
+		playSound(SOUND_FINISHED_LEVEL);
+		return GWSTATUS_FINISHED_LEVEL;
 	}
 	dm->doSomething();
 	for (Actor* a : actors){
@@ -94,8 +98,10 @@ bool StudentWorld::ProtesterinVicinity(int range, int x, int y, char type) {
 				else if (type == 's') {
 					dynamic_cast<Protester*>(a)->decHealth(2);   //squirt hit
 					dynamic_cast<Protester*>(a)->stun(); //squirt stun
-					if (dynamic_cast<Protester*>(a)->getHealth() <= 0)
+					if (dynamic_cast<Protester*>(a)->getHealth() <= 0) {
 						playSound(SOUND_PROTESTER_GIVE_UP);
+						increaseScore(100);
+					}
 				}
 				return true;
 			}
@@ -247,10 +253,14 @@ void StudentWorld::generateField(string type) {
 }
 void StudentWorld::HUD() {
 	string HUD =
-		"Lvl: " + to_string(getLevel()) + " " +
-		"Lives: " + to_string(getLives()) + " " +
-		"Hlth: " + to_string(dm->getHealth() * 10) + "% " +
-		"Scr: " + to_string(getScore()) + " ";
+		"Lvl: "      +		to_string(getLevel())				+ " "  +
+		"Lives: "	 +		to_string(getLives())				+ " "  +
+		"Hlth: "	 +		to_string(dm->getHealth() * 10)		+ "% " +
+		"Wtr: "		 +		to_string(getSquirtsRemaining())	+ " "  +
+		"Gld: "		 +		to_string(numOfGoldBait())			+ " "  +
+		"Sonar: "	 +		to_string(numOfSonarKits())			+ " "  +
+		"Oil Left: " +		to_string(OilBarrelsRemaining())    + " "  +
+		"Scr: "      +		to_string(getScore())				+ " "  ;
 	setGameStatText(HUD);
 }
 int StudentWorld::getCurKey() { return currentKey; }
@@ -378,8 +388,11 @@ void StudentWorld::killProtestorsHere(int x, int y) {
 		for (Actor *p : actors) {
 			if (p->isRegProtester()) {
 				if (isThereContact(p->getX(), p->getY(), x, y)) {
+					if (dynamic_cast<Protester*>(p)->getHealth() > 0) {
+						increaseScore(500);
+						playSound(SOUND_PROTESTER_GIVE_UP);
+					}
 					dynamic_cast<Protester*>(p)->decHealth(100);
-					playSound(SOUND_PROTESTER_GIVE_UP);
 				}
 			}
 		}	
@@ -398,6 +411,13 @@ bool StudentWorld::isThereContact(int x, int y, int x2, int y2) {
 		}
 	}
 	return false;
+}
+
+void StudentWorld::decOilBarrels() {
+	OilBarrels--;
+}
+int StudentWorld::OilBarrelsRemaining() {
+	return OilBarrels;
 }
 
 
