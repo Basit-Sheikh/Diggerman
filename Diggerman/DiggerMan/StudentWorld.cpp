@@ -39,7 +39,7 @@ int StudentWorld::move() {
 		return GWSTATUS_FINISHED_LEVEL;
 	}
 	int protesterTickLength = numOfProtesterTicksTillSpawn();
-	int maxProtesters = 10;//min(15, int(2 + getLevel() * 1.5));
+	int maxProtesters =min(15, int(2 + getLevel() * 1.5));
 	if (Protesters < maxProtesters && ProtesterTicksPassed >= protesterTickLength ) {
 		//The odds of the Protester being a Hard Core Protester (vs.a Regular Protester) must be
 	    // determined with this formula:
@@ -88,7 +88,7 @@ int StudentWorld::move() {
 			int ct = 0;
 			while (true) {
 				
-				if (dirtlessSpots(randX,randY) && !isABoulderHere(randX, randY, GraphObject::Direction::none)) { 
+				if (dirtlessSpots(randX,randY) && !isABoulderHere(randX, randY, GraphObject::Direction::none) && farAway(randX,randY)) { 
 					break;
 				}
 				randX = randXGenerator("pool");
@@ -116,11 +116,12 @@ bool StudentWorld::DMinVicinity(int range, int x, int y) {
 	return dist <= range;
 }
 bool StudentWorld::ProtesterinVicinity(int range, int x, int y, char type) {
+	bool inVicinity = false;
 	for (Actor* a : actors) {
 		if (a->isRegProtester()) {
 			double dist = sqrt(pow(a->getX() - x, 2) + pow(a->getY() - y, 2));
 			if (dist <= range) {
-				if (type == 'n') dynamic_cast<Protester*>(a)->decHealth(10);       //nugget bait
+				if (type == 'n') { dynamic_cast<Protester*>(a)->decHealth(10); inVicinity = true;}     //nugget bait
 				else if (type == 's') {
 					dynamic_cast<Protester*>(a)->decHealth(2);   //squirt hit
 					dynamic_cast<Protester*>(a)->stun(); //squirt stun
@@ -128,13 +129,17 @@ bool StudentWorld::ProtesterinVicinity(int range, int x, int y, char type) {
 						playSound(SOUND_PROTESTER_GIVE_UP);
 						increaseScore(100);
 					}
+					//If the HC protester got killed by squirts
+					/*if (dynamic_cast<HCProtester*>(a)->getHealth() <= 0) {
+						playSound(SOUND_PROTESTER_GIVE_UP);
+						increaseScore(250);
+					}*/
+					inVicinity = true;
 				}
-				return true;
 			}
-			else return false;
 		}
 	}
-	return false;
+	return inVicinity;
 	
 }
 void StudentWorld::fillDirt(){
@@ -411,6 +416,17 @@ void StudentWorld::decrementSquirts() { SquirtsRemaining--; }
 
 
 void StudentWorld::killProtestorsHere(int x, int y) {
+	//different way to do this
+	//for (Actor *p : actors) {
+	//	if (p->isProtester) { //make new function that checks if theyre a protester (either regular or hardcore)
+	//		if (isThereContact(p->getX(), p->getY(), x, y)) {
+	//			increaseScore(500); //killing either protester gives 500 points
+	//			playSound(SOUND_PROTESTER_GIVE_UP); //same sound for both of them
+	//			//dynamic cast to a normal or hardcore protester and dec health by 100,need to have a way to determine which protester it is
+	//		}
+	//	}
+	//}
+
 		for (Actor *p : actors) {
 			if (p->isRegProtester()) {
 				if (isThereContact(p->getX(), p->getY(), x, y)) {
@@ -421,6 +437,7 @@ void StudentWorld::killProtestorsHere(int x, int y) {
 					dynamic_cast<Protester*>(p)->decHealth(100);
 				}
 			}
+			//if its a hardcore protester, gives 500 points also
 		}	
 }
 

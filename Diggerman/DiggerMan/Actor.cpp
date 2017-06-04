@@ -88,9 +88,11 @@ void Protester::doSomething() {
 			}
 			break;
 		case stunned:
-			if (time_stunned == 0 || getHealth() <= 0)
+			if (getHealth() <= 0)
+				currentState = annoyed;
+			else if (time_stunned == 0)
 				currentState = rest;
-			time_stunned--;
+			else time_stunned--;
 			break;
 		case annoyed:   //annoyed state, goBackToSafeSpace()
 			if (getX() == 60 && getY() == 60)
@@ -411,6 +413,7 @@ SQUIRT GUN IMPLEMENTATION
 */
 
 void Squirt::doSomething() {
+
 	if (!isAlive()) return;
 
 	//protestorinvicinity checks if he is in range, and if he is, it damages him.
@@ -422,7 +425,6 @@ void Squirt::doSomething() {
 		this->kill();
 		return;
 	}
-
 	else {
 		if (getDirection() == up) {
 			if (!getWorld()->isDirtAboveMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance) && !getWorld()->isABoulderHere(getX(), getY(), getDirection())) {
