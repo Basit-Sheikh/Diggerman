@@ -63,6 +63,7 @@ PROTESTER IMPLEMENTATION
 ----------------------------
 */
 void Protester::doSomething() {
+
 	if (isAlive()) {
 		if (getHealth() <= 0 && waitCount <= 0)
 			currentState = annoyed;
@@ -80,16 +81,17 @@ void Protester::doSomething() {
 			if (!checkIfCanSeeDigMan())
 				moveProtester();
 			if (yellCoolDown == 0) {
-				if (getWorld()->canShout(getX(), getY()))
+				if (getWorld()->canShout(getX(), getY())) {
 					yellCoolDown = 15;
+					stun();
+				}
 			}
 			break;
 		case stunned:
 			if (time_stunned == 0 || getHealth() <= 0)
-				setStateAnnoyed();
+				currentState = rest;
 			time_stunned--;
 			break;
-		
 		case annoyed:   //annoyed state, goBackToSafeSpace()
 			if (getX() == 60 && getY() == 60)
 				kill();
@@ -279,7 +281,7 @@ void TempGoldNugget::doSomething() {
 		this->kill();
 	}
 	else {
-		if (getWorld()->ProtesterinVicinity( 3, this->getX(), this->getY(), 'n')) {
+		if (getWorld()->ProtesterinVicinity(3, this->getX(), this->getY(), 'n')) {
 			setVisible(false);
 			this->kill();
 			getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);

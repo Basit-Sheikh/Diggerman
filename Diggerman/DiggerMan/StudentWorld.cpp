@@ -9,12 +9,14 @@ int StudentWorld::init() {
 	SonarKits = 1; //he is given 1 at the start of every level
 	OilBarrels = numOfOilBarrels();
 	SquirtsRemaining = 5;
+	Protesters = 0;
 	dm = new DiggerMan(this);
 	dm->setVisible(true);
 	fillDirt();
+
+	generateField("RegProtester");
 	generateField("Barrel");
 	generateField("PermNugget");
-	generateField("RegProtester");
 	generateField("Boulder");
 	return GWSTATUS_CONTINUE_GAME;
 }
@@ -27,7 +29,6 @@ int StudentWorld::move() {
 		decLives();
 		return GWSTATUS_PLAYER_DIED;
 	}
-
 	if (dm->getHealth() <= 0) {
 		decLives();
 		playSound(SOUND_PLAYER_GIVE_UP);
@@ -37,6 +38,31 @@ int StudentWorld::move() {
 		playSound(SOUND_FINISHED_LEVEL);
 		return GWSTATUS_FINISHED_LEVEL;
 	}
+	int protesterTickLength = numOfProtesterTicksTillSpawn();
+	int maxProtesters = 10;//min(15, int(2 + getLevel() * 1.5));
+	if (Protesters < maxProtesters && ProtesterTicksPassed >= protesterTickLength ) {
+		//The odds of the Protester being a Hard Core Protester (vs.a Regular Protester) must be
+	    // determined with this formula:
+		// int probabilityOfHardcore = min(90, current_level_number * 10 + 30)
+
+		//**for the time being i always spawn a regular protester since we haven't written HC Protester yet**
+		
+		// 1/probabilityofHardCore chance of the protester being hardcore:
+		int probabilityOfHardcore = min(90, int(getLevel() * 10 + 30));
+		if (rand() % probabilityOfHardcore + 1 == 1) {
+			//spawn HC PROTESTER
+			cout << "HC PROTESTER SPAWNED" << endl;
+		}
+		else {
+			//spawn R PROTESTER
+			actors.push_back(new Protester(this));
+			actors.back()->setVisible(true);
+			cout << "R PROTESTER SPAWNED" << endl;
+		}
+		Protesters++;
+		ProtesterTicksPassed = 0;
+	}
+	else ProtesterTicksPassed++;
 	dm->doSomething();
 	for (Actor* a : actors){
 		if (a->isAlive()) 
@@ -213,6 +239,7 @@ void StudentWorld::generateField(string type) {
 	else if (type == "RegProtester") {
 		actors.push_back(new Protester(this));
 		actors.back()->setVisible(true);
+		Protesters++;
 		return;
 	}
 	//------------------------------------------------
@@ -269,6 +296,7 @@ int StudentWorld::numOfGoldNuggets() { return max((int)(5 - getLevel()) / 2, 2);
 int StudentWorld::numOfBoulders() { return min((int)(getLevel()) / 2 + 2, 7); }
 int StudentWorld::numOfOilBarrels() { return min((int)(2 + getLevel()), 18); }
 int StudentWorld::numOfSonarAndWaterTicks() { return max(100, int(300 - (10 * getLevel()))); } //returns how many ticks until sonar kit disappears/expires
+int StudentWorld::numOfProtesterTicksTillSpawn() { return max(25, int(200 - getLevel())); }
 //int StudentWorld::timeStunned() {return max(50, int(100 - (10 * getLevel())));}
 bool StudentWorld::isThereDirtVisibleHere(int x, int y) { return dirt[x][y]; }
 void StudentWorld::cleanUp() {
@@ -290,8 +318,6 @@ void StudentWorld::cleanUp() {
 	DiggerMan *temp2 = dm;
 	dm = nullptr;
 	delete temp2;
-
-	cout << actors.size();
 }
 bool StudentWorld::isDirtAboveMe(int x, int y, int z) {
 	return (isThereDirtVisibleHere(x, y + 4 + z) || isThereDirtVisibleHere(x + 1, y + 4 + z) ||

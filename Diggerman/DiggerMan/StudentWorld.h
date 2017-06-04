@@ -31,6 +31,7 @@ public:
 	int numOfGoldNuggets();
 	int numOfOilBarrels();
 	int numOfSonarAndWaterTicks(); //Sonar and Water have the same formula
+	int numOfProtesterTicksTillSpawn();
 	bool isThereDirtVisibleHere(int x, int y);
 	bool DMinVicinity(int range, int x, int y);
 	bool ProtesterinVicinity(int range, int x, int y, char type);
@@ -74,6 +75,8 @@ private:
 	int GoldBait;
 	int SquirtsRemaining;
 	int OilBarrels;
+	int Protesters;
+	int ProtesterTicksPassed = 0;
 	int currentKey;
 	vector<Actor *> actors;
 	DiggerMan* dm;
