@@ -30,8 +30,8 @@ public:
 	Character(int id, int x, int y, StudentWorld* sw, Direction dir, double size, int dep, int hp) : 
 		Actor(id, x, y, dir, size, dep, sw), health(hp) {}
 	int getHealth() const { return health; }
-	void decHealth(int subAm) { health -= subAm; }
-private:
+	virtual void decHealth(int subAm) { health -= subAm; }
+protected:
 	int health;
 
 };
@@ -49,24 +49,14 @@ private:
 class Protester : public Character {
 protected:
 	enum State { rest, move, annoyed, stunned, follow, start };
-
-public:
-	Protester(StudentWorld * sw) :
-		Character(IMID_PROTESTER, 60, 60, sw, left, 1.0, 0, 10), currentState(start), moveCount(0), waitCount(0), yellCoolDown(0), quickPathFound(false) {}
-	virtual void doSomething();
-	int getTicksBetweenMoveCount();
-	int getRandomDirMoveTickCount();
-	void goBackToSafeSpace();
-	void stun();
-	virtual bool isRegProtester() { return true;}
-	void setStateAnnoyed();
-private:
-	State currentState;
+	int** bfsArray;
+	void chooseQuickDirection();
+	bool quickPathFound;	
+	int yellCoolDown;
+	int time_stunned;	
 	int moveCount;
 	int waitCount;
-	int yellCoolDown;
-	int time_stunned;
-	bool quickPathFound;
+	State currentState;
 	Direction pickRandomDirection() {
 		int i = rand() % 4;
 		if (i == 0)
@@ -79,27 +69,42 @@ private:
 			return up;
 		return none;
 	}
-    void protesterMoveHelper(int x, int y);
+
+	void followDMHelper(int x, int y, Direction d);	 
+	void protesterMoveHelper(int x, int y);
 	void moveProtester();
 	bool checkIfCanSeeDigMan();
-	void followDMHelper(int x, int y, Direction d);
-	queue<pair<pair<int, int>, int>> bfsQueue;
-	int bfsArray[64][64];
-	void print();
+	void startProt();
+	void moveProt();
+	void stunnedProt();
+	void leave();
+	void resting();
+
+public:	
+	void decHealth(int subAm);
+	int getTicksBetweenMoveCount();
+	int getRandomDirMoveTickCount();
+    void stun();   
+	Protester(StudentWorld* sw, int id, int x, int y, Direction dir, double size, int dep, int hp);
+	Protester(StudentWorld * sw);
+	void doSomething();
+
+	void goBackToSafeSpace();
+
+	virtual bool isRegProtester() { return true;}
+	void setStateAnnoyed();
+private:
 };
-//class HardcoreProtestor : public Protester {
-//
-//public:
-//	HardcoreProtestor(StudentWorld *sw) :Protester(sw) {}
-//	virtual void doSomething();
-//	virtual bool isRegProtester() { return false; }
-//	//modify goBackToSafeSpace to find shortest path to diggerman if he's within the radius specified by the spec sheet
-//	//some object interactions are different so I need to double check
-//
-//private:
-//	//read specs (don't think he needs anything else)
-//
-//};
+class HardcoreProtester : public Protester {
+
+public:
+	HardcoreProtester(StudentWorld *sw);
+	void doSomething();
+	virtual bool isRegProtester() { return false; }
+private:
+	int followCount;
+
+};
 class Dirt : public Actor {
 public:
 	Dirt(int startX, int startY, StudentWorld* sw) :

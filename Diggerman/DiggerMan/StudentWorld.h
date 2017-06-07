@@ -69,7 +69,7 @@ public:
 	void killDm() { dm->decHealth(100); }
 	bool isThereContact(int x, int y, int x2, int y2);
 	bool dirtlessSpots(int x, int y);
-
+	bool generateQuickPathField(int**& bfsArray, int x, int y);
 private:
 	int SonarKits;
 	int GoldBait;
@@ -82,6 +82,7 @@ private:
 	DiggerMan* dm;
 	Dirt* dirt[64][64];
 	Protester* p;
+	HardcoreProtester* hp;
 };
 
 #endif // STUDENTWORLD_H_

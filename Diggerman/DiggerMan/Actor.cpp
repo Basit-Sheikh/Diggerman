@@ -62,57 +62,71 @@ bool DiggerMan::clearDirt() {return getWorld()->removeDirt(getX(), getY()); }
 PROTESTER IMPLEMENTATION 
 ----------------------------
 */
-void Protester::doSomething() {
 
+void Protester::chooseQuickDirection() {
+	int u = 100000, d = 100000, l = 100000, r = 100000;
+	if (getY() + 1 < 64 && bfsArray[getX()][getY() + 1] != -2)
+		u = bfsArray[getX()][getY() + 1];
+	if (getY() - 1 >= 0 && bfsArray[getX()][getY() - 1] != -2)
+		d = bfsArray[getX()][getY() - 1];
+	if (getX() + 1 < 64 && bfsArray[getX() + 1][getY()] != -2)
+		r = bfsArray[getX() + 1][getY()];
+	if (getX() - 1 >= 0 && bfsArray[getX() - 1][getY()] != -2)
+		l = bfsArray[getX() - 1][getY()];
+	if (u <= r && u <= l && u <= d) {
+		setDirection(up);
+		protesterMoveHelper(0, 1);
+	}
+	else if (r <= u && r <= l && r <= d) {
+		setDirection(right);
+		protesterMoveHelper(1, 0);
+	}
+	else if (l <= u && l <= r && l <= d) {
+		setDirection(left);
+		protesterMoveHelper(-1, 0);
+	}
+	else if (d <= u && d <= r && d <= l) {
+		setDirection(down);
+		protesterMoveHelper(0, -1);
+	}
+	waitCount = getTicksBetweenMoveCount();
+	currentState = rest;
+}
+
+Protester::Protester(StudentWorld * sw) :
+	Character(IMID_PROTESTER, 60, 60, sw, left, 1.0, 0, 10), currentState(start), moveCount(0), waitCount(0), yellCoolDown(0), quickPathFound(false) {
+	bfsArray = new int*[VIEW_WIDTH];
+	for (int i = 0; i < VIEW_WIDTH; i++)
+		bfsArray[i] = new int[VIEW_HEIGHT];
+}
+
+void Protester::doSomething() {
 	if (isAlive()) {
 		if (getHealth() <= 0 && waitCount <= 0)
 			currentState = annoyed;
 		//rest, move, annoyed, follow, start
 		switch (currentState) {
 		case start:		//init state
-			moveCount = getRandomDirMoveTickCount();
-			waitCount = getTicksBetweenMoveCount();
-			moveTo(getX() - 1, getY());
-			currentState = rest;
+			startProt();
+			break;
+		case stunned:
+			stunnedProt();
 			break;
 		case move:		//randomly moving state
 			//moveProtester is a helper function for do something
 			//just moves protester, moved to func for readablility of doSomething()
-			if (!checkIfCanSeeDigMan())
-				moveProtester();
-			if (yellCoolDown == 0) {
-				if (getWorld()->canShout(getX(), getY())) {
-					yellCoolDown = 15;
-					stun();
-				}
-			}
-			break;
-		case stunned:
-			if (getHealth() <= 0)
-				currentState = annoyed;
-			else if (time_stunned == 0)
-				currentState = rest;
-			else time_stunned--;
+			moveProt();
 			break;
 		case annoyed:   //annoyed state, goBackToSafeSpace()
-			if (getX() == 60 && getY() == 60)
-				kill();
-			else
-				goBackToSafeSpace();
-			break;
-		case follow:    //following diggerman
+			leave();
 			break;
 		case rest:		//resting state, either between ticks, or when annoyed
-			if (waitCount < 1)
-				currentState = move;
-			waitCount--;
+			resting();
 			break;
 		}
 		if( yellCoolDown != 0)
-			yellCoolDown--;
-		
+			yellCoolDown--;	
 	}
-	else return;
 }
 bool Protester::checkIfCanSeeDigMan() {
 	int x;
@@ -155,6 +169,47 @@ bool Protester::checkIfCanSeeDigMan() {
 	}
 	return false;
 }
+void Protester::startProt() {
+	moveCount = getRandomDirMoveTickCount();
+	waitCount = getTicksBetweenMoveCount();
+	moveTo(getX() - 1, getY());
+	currentState = rest;
+}
+void Protester::moveProt(){
+	if (!checkIfCanSeeDigMan())
+		moveProtester();
+	if (yellCoolDown == 0 &&  getWorld()->canShout(getX(), getY())) {
+		yellCoolDown = 15;
+		stun();
+	}
+}
+void Protester::stunnedProt() {
+	if (getHealth() <= 0)
+		currentState = annoyed;
+	else if (time_stunned == 0)
+		currentState = rest;
+	else time_stunned--;
+}
+void Protester::leave() {
+	if (getX() == 60 && getY() == 60)
+		kill();
+	else
+		goBackToSafeSpace();
+}
+void Protester::resting() {
+	if (waitCount < 1)
+		currentState = move;
+	waitCount--;
+}
+void Protester::decHealth(int subAm) {
+	if (health > 0) {
+		health -= subAm;
+		if (health <= 0) {
+			quickPathFound = false;
+			currentState = annoyed;
+		}
+	}
+}
 void Protester::followDMHelper(int x, int y, Direction d) {
 	setDirection(d);
 	moveTo(x, y);
@@ -164,68 +219,10 @@ void Protester::followDMHelper(int x, int y, Direction d) {
 }
 void Protester::goBackToSafeSpace(){
 	if (quickPathFound) {
-		int u = 100000,d = 100000, l = 100000, r = 100000;
-		if (getY() + 1 < 64 && bfsArray[getX()][getY() + 1] != -2)
-			u = bfsArray[getX()][getY() + 1];
-		if (getY() - 1 >= 0 && bfsArray[getX()][getY() - 1] != -2)
-			d = bfsArray[getX()][getY() - 1];
-		if (getX() + 1 < 64 && bfsArray[getX() + 1][getY()] != -2)
-			r = bfsArray[getX() + 1][getY()];
-		if (getX() - 1 >= 0 && bfsArray[getX() - 1][getY()] != -2) 
-			l = bfsArray[getX() - 1][getY()];
-		if (u <= r && u <= l && u <= d) {
-			setDirection(up);
-			protesterMoveHelper(0, 1);
-		}
-		else if (r <= u && r <= l && r <= d) {
-			setDirection(right);
-			protesterMoveHelper(1, 0);
-		}
-		else if (l <= u && l <= r && l <= d) {
-			setDirection(left);
-			protesterMoveHelper(-1, 0);
-		}
-		else if (d <= u && d <= r && d <= l) {
-			setDirection(down);
-			protesterMoveHelper(0, -1);
-		}
-		waitCount = getTicksBetweenMoveCount();
-		currentState = rest;
+		chooseQuickDirection();
 	}
 	else {
-		for (int i = 0; i < VIEW_WIDTH; i++) {
-			for (int j = 0; j < VIEW_HEIGHT; j++) {
-				if (!getWorld()->isMoveableLocForProtester(i, j) || getWorld()->isABoulderHere(i, j, none))
-					bfsArray[i][j] = -2;
-				else
-					bfsArray[i][j] = -1;
-			}
-		}	
-		bfsQueue.push(make_pair(make_pair(60, 60), 0));
-		while (!bfsQueue.empty()) {
-			pair<pair<int, int>, int> p = bfsQueue.front();
-			bfsQueue.pop();
-			//if surrounding nodes are in bounds, and not visited, then push to queue
-			if (p.first.first + 1 < VIEW_WIDTH && bfsArray[p.first.first + 1][p.first.second] == -1) {
-				bfsQueue.push(make_pair(make_pair(p.first.first + 1, p.first.second), p.second + 1));
-				bfsArray[p.first.first + 1][p.first.second] = p.second + 1;
-			}
-			if (p.first.first - 1 >= 0 && bfsArray[p.first.first - 1][p.first.second] == -1) {
-				bfsQueue.push(make_pair(make_pair(p.first.first - 1, p.first.second), p.second + 1));
-				bfsArray[p.first.first - 1][p.first.second] = p.second + 1;
-			}
-			if (p.first.second - 1 >= 0 && bfsArray[p.first.first][p.first.second - 1] == -1) {
-				bfsQueue.push(make_pair(make_pair(p.first.first, p.first.second - 1), p.second + 1));
-				bfsArray[p.first.first][p.first.second - 1] = p.second + 1;
-			}
-			if (p.first.second + 1 < VIEW_HEIGHT && bfsArray[p.first.first][p.first.second + 1] == -1) {
-				bfsQueue.push(make_pair(make_pair(p.first.first, p.first.second + 1), p.second + 1));
-				bfsArray[p.first.first][p.first.second + 1] = p.second + 1;
-			}
-			bfsArray[p.first.first][p.first.second] = p.second;
-		}
-		quickPathFound = true;
-
+		quickPathFound = getWorld()->generateQuickPathField(bfsArray, 60, 60);
 	}
 }
 int Protester::getTicksBetweenMoveCount(){return max(0, 3 - (int)getWorld()->getLevel() / 4);}
@@ -265,6 +262,13 @@ void Protester::stun() {
 	time_stunned = max(50, int(100 - (10 * getWorld()->getLevel())));
 	currentState = stunned; 
 }
+
+Protester::Protester(StudentWorld * sw, int id, int x, int y, Direction dir, double size, int dep, int hp) : Character(id, x, y, sw, dir, size, dep, hp) {
+	bfsArray = new int*[VIEW_WIDTH];
+	for (int i = 0; i < VIEW_WIDTH; i++)
+		bfsArray[i] = new int[VIEW_HEIGHT];
+}
+
 
 /*
 ----------------------------
@@ -485,5 +489,43 @@ void WaterPool::doSomething() {
 
 		}
 		decreaseLifeTicks();
+	}
+}
+
+HardcoreProtester::HardcoreProtester(StudentWorld * sw) : Protester(sw, IMID_HARD_CORE_PROTESTER, 60, 60, left, 1.0, 0, 20), followCount(0){
+	currentState = start;
+	moveCount = 0;
+	waitCount = 0; 
+	yellCoolDown = 0;
+	quickPathFound = false;
+}
+
+void HardcoreProtester::doSomething(){
+	if (isAlive()) {
+		
+		if (getHealth() <= 0 && waitCount <= 0)
+			currentState = annoyed;			
+		//rest, move, annoyed, follow, start
+		switch (currentState) {
+		case start:		//init state
+			startProt();
+			break;
+		case stunned:
+			stunnedProt();
+			break;
+		case move:
+			moveProt();
+			break;
+		case annoyed:   //annoyed state, goBackToSafeSpace()
+			leave();
+			break;
+		case follow:    //following diggerman
+			break;
+		case rest:		//resting state, either between ticks, or when annoyed
+			resting();
+			break;
+		}
+		if (yellCoolDown != 0)
+			yellCoolDown--;
 	}
 }

@@ -13,17 +13,23 @@ int StudentWorld::init() {
 	dm = new DiggerMan(this);
 	dm->setVisible(true);
 	fillDirt();
-
+	hp = new HardcoreProtester(this);
+	hp->setVisible(true);
+	
 	generateField("RegProtester");
+	actors.push_back(hp);
 	generateField("Barrel");
 	generateField("PermNugget");
 	generateField("Boulder");
+
+
 	return GWSTATUS_CONTINUE_GAME;
 }
 int StudentWorld::move() {
 	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
 	// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
 	HUD();
+	hp->doSomething();
 	getKey(currentKey);
 	if (currentKey == KEY_PRESS_ESCAPE) {
 		decLives();
@@ -99,6 +105,7 @@ int StudentWorld::move() {
 			actors.back()->setVisible(true);
 		}
 	}
+	
 	currentKey = 0;
 	return GWSTATUS_CONTINUE_GAME;
 }
@@ -108,6 +115,42 @@ bool StudentWorld::dirtlessSpots(int x, int y) {
 			if ((isThereDirtVisibleHere(x + i, y + k)))
 				return false;
 		}
+	}
+	return true;
+}
+bool StudentWorld::generateQuickPathField(int **& bfsArray, int x, int y) {
+	queue<pair<pair<int, int>, int>> bfsQueue;
+
+	for (int i = 0; i < VIEW_WIDTH; i++) {
+		for (int j = 0; j < VIEW_HEIGHT; j++) {
+			if (!isMoveableLocForProtester(i, j) || isABoulderHere(i, j, GraphObject::Direction::none))
+				bfsArray[i][j] = -2;
+			else
+				bfsArray[i][j] = -1;
+		}
+	}
+	bfsQueue.push(make_pair(make_pair(x, y), 0));
+	while (!bfsQueue.empty()) {
+		pair<pair<int, int>, int> p = bfsQueue.front();
+		bfsQueue.pop();
+		//if surrounding nodes are in bounds, and not visited, then push to queue
+		if (p.first.first + 1 < VIEW_WIDTH && bfsArray[p.first.first + 1][p.first.second] == -1) {
+			bfsQueue.push(make_pair(make_pair(p.first.first + 1, p.first.second), p.second + 1));
+			bfsArray[p.first.first + 1][p.first.second] = p.second + 1;
+		}
+		if (p.first.first - 1 >= 0 && bfsArray[p.first.first - 1][p.first.second] == -1) {
+			bfsQueue.push(make_pair(make_pair(p.first.first - 1, p.first.second), p.second + 1));
+			bfsArray[p.first.first - 1][p.first.second] = p.second + 1;
+		}
+		if (p.first.second - 1 >= 0 && bfsArray[p.first.first][p.first.second - 1] == -1) {
+			bfsQueue.push(make_pair(make_pair(p.first.first, p.first.second - 1), p.second + 1));
+			bfsArray[p.first.first][p.first.second - 1] = p.second + 1;
+		}
+		if (p.first.second + 1 < VIEW_HEIGHT && bfsArray[p.first.first][p.first.second + 1] == -1) {
+			bfsQueue.push(make_pair(make_pair(p.first.first, p.first.second + 1), p.second + 1));
+			bfsArray[p.first.first][p.first.second + 1] = p.second + 1;
+		}
+		bfsArray[p.first.first][p.first.second] = p.second;
 	}
 	return true;
 }
@@ -130,10 +173,10 @@ bool StudentWorld::ProtesterinVicinity(int range, int x, int y, char type) {
 						increaseScore(100);
 					}
 					//If the HC protester got killed by squirts
-					/*if (dynamic_cast<HCProtester*>(a)->getHealth() <= 0) {
+					if (dynamic_cast<HardcoreProtester*>(a)->getHealth() <= 0) {
 						playSound(SOUND_PROTESTER_GIVE_UP);
 						increaseScore(250);
-					}*/
+					}
 					inVicinity = true;
 				}
 			}
@@ -158,9 +201,6 @@ bool StudentWorld::removeDirt(int x, int y) {
 	for (int i = x; i < x + 4; i++) {
 		for (int j = y; j < y + 4; j++) {
 			if (dirt[i][j]) {
-				/*****************************************************
-				Dig sound is kind of loud and somewhat masks other sound effects, comment out the playSound function call directly below to remove it.
-				***************************************************/
 				dugDirt = true;
 				Dirt* temp = dirt[i][j];
 				dirt[i][j] = nullptr;
