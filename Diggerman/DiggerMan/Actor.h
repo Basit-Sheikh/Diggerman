@@ -88,11 +88,10 @@ public:
 	Protester(StudentWorld* sw, int id, int x, int y, Direction dir, double size, int dep, int hp);
 	Protester(StudentWorld * sw);
 	void doSomething();
-
 	void goBackToSafeSpace();
-
 	virtual bool isRegProtester() { return true;}
 	void setStateAnnoyed();
+	~Protester();
 private:
 };
 class HardcoreProtester : public Protester {

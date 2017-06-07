@@ -258,6 +258,11 @@ void Protester::moveProtester(){
 void Protester::setStateAnnoyed() {
 	currentState = annoyed;
 }
+Protester::~Protester() {
+	for (int i = 0; i < VIEW_WIDTH; i++)
+		delete[] bfsArray[i];
+	delete[] bfsArray;
+}
 void Protester::stun() {
 	time_stunned = max(50, int(100 - (10 * getWorld()->getLevel())));
 	currentState = stunned; 
