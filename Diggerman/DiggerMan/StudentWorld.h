@@ -1,6 +1,7 @@
  #ifndef STUDENTWORLD_H_
 #define STUDENTWORLD_H_
 
+
 #include "GameWorld.h"
 #include "GameConstants.h"
 #include "GraphObject.h"
@@ -85,5 +86,6 @@ private:
 	Protester* p;
 	HardcoreProtester* hp;
 };
+
 
 #endif // STUDENTWORLD_H_

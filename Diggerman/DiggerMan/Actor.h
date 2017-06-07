@@ -1,13 +1,13 @@
 #ifndef ACTOR_H_
 #define ACTOR_H_
+
+
 #include "GraphObject.h"
 #include <algorithm>
 #include <queue>
 #include <stack>
 using namespace std;
-// Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 class StudentWorld;
-
 
 class Actor : public GraphObject {
 public:
@@ -23,8 +23,8 @@ protected:
 private:
 	StudentWorld* world;
 	bool alive;
-
 };
+
 
 class Character : public Actor {
 public:
@@ -34,8 +34,8 @@ public:
 	virtual void decHealth(int subAm) { health -= subAm; }
 protected:
 	int health;
-
 };
+
 
 class DiggerMan : public Character {
 public:
@@ -46,6 +46,7 @@ private:
 	void moveDiggerMan();
 	bool clearDirt();
 };
+
 
 class Protester : public Character {
 protected:
@@ -71,7 +72,6 @@ protected:
 			return up;
 		return none;
 	}
-
 	void followDMHelper(int x, int y, Direction d);	 
 	void protesterMoveHelper(int x, int y);
 	void moveProtester();
@@ -82,7 +82,6 @@ protected:
 	void stunnedProt();
 	void leave();
 	void resting();
-
 public:	
 	void decHealth(int subAm);
 	int getTicksBetweenMoveCount();
@@ -98,8 +97,9 @@ public:
 	~Protester();
 private:
 };
-class HardcoreProtester : public Protester {
 
+
+class HardcoreProtester : public Protester {
 public:
 	HardcoreProtester(StudentWorld *sw);
 	void doSomething();
@@ -107,8 +107,9 @@ public:
 	virtual bool isHCProtester() { return true; }
 private:
 	int followCount;
-
 };
+
+
 class Dirt : public Actor {
 public:
 	Dirt(int startX, int startY, StudentWorld* sw) :
@@ -120,10 +121,7 @@ class Goodies :public Actor {
 public:
 	Goodies(StudentWorld* sw, const int img, int randX, int randY) :
 		Actor(img, randX, randY, right, 1.0, 2, sw) {};
-
 	virtual void doSomething() {};
-private:
-
 };
 
 
@@ -135,20 +133,18 @@ public:
 	virtual void doSomething();
 	State getState() const { return currentState; }
 private:
-	
 	State currentState;
 	int tickCount;
-
 };
+
 
 class Barrel : public Goodies{
 public:
 	Barrel(int randX, int randY, StudentWorld* sw) : 
 		Goodies(sw, IMID_BARREL, randX, randY){};
 	virtual void doSomething();
-private:
-	
 };
+
 
 class Sonar : public Goodies {
 public:
@@ -165,7 +161,6 @@ private:
 };
 
 
-
 class TempGoldNugget : public Goodies {
 public:
 	TempGoldNugget(int deathTicks, int randX, int randY, StudentWorld* sw) :
@@ -173,10 +168,8 @@ public:
 	int getTicksLeftTillDeath();
 	void decreaseLifeTicks();
 	virtual void doSomething();
-
 private:
 	int ticksLeftTillDeath;
-
 };
 
 
@@ -184,7 +177,6 @@ class PermGoldNugget : public Goodies {
 public:
 	PermGoldNugget(StudentWorld* sw, int randX, int randY) :
 		Goodies(sw, IMID_GOLD, randX, randY) {};
-
 	void GoldPickedUp();
 	virtual void doSomething();
 private:
@@ -199,24 +191,20 @@ public:
 	int getTicksLeftTillDeath();
 	void decreaseLifeTicks();
 	virtual void doSomething();
-
 private:
 	int ticksLeftTillDeath;
 };
 
+
 class Squirt : public Actor { //cannot inherit from goodies because depth is 1 not 2
 public:
 	Squirt(StudentWorld* sw, Direction d, int x, int y) :
-		Actor(IMID_WATER_SPURT, x, y, d, 1, 1, sw) {
-		squirt_distance = 0;
-	};
+		Actor(IMID_WATER_SPURT, x, y, d, 1, 1, sw) { squirt_distance = 0; };
 	virtual void doSomething();
 	void incrementDistance() { squirt_distance++; }
 private:
 	int squirt_distance;
 };
-
-
 
 
 #endif // ACTOR_H_

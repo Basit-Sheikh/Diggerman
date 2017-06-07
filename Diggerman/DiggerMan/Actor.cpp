@@ -1,7 +1,5 @@
 #include "Actor.h"
 #include "StudentWorld.h"
-#include <algorithm>
-
 /*
 ----------------------------
 DIGGERMAN IMPLEMENTATION 
@@ -62,7 +60,40 @@ bool DiggerMan::clearDirt() {return getWorld()->removeDirt(getX(), getY()); }
 PROTESTER IMPLEMENTATION 
 ----------------------------
 */
-
+Protester::Protester(StudentWorld * sw) :
+	Character(IMID_PROTESTER, 60, 60, sw, left, 1.0, 0, 10), currentState(start), moveCount(0), waitCount(0), yellCoolDown(0), quickPathFound(false) {
+	bfsArray = new int*[VIEW_WIDTH];
+	for (int i = 0; i < VIEW_WIDTH; i++)
+		bfsArray[i] = new int[VIEW_HEIGHT];
+}
+void Protester::doSomething() {
+	if (isAlive()) {
+		if (getHealth() <= 0 && waitCount <= 0)
+			currentState = annoyed;
+		//rest, move, annoyed, follow, start
+		switch (currentState) {
+		case start:		//init state
+			startProt();
+			break;
+		case stunned:
+			stunnedProt();
+			break;
+		case move:		//randomly moving state
+			moveProt();
+			break;
+		case bait:
+			considerBait();
+		case annoyed:   //annoyed state, goBackToSafeSpace()
+			leave();
+			break;
+		case rest:		//resting state, either between ticks, or when annoyed
+			resting();
+			break;
+		}
+		if (yellCoolDown != 0)
+			yellCoolDown--;
+	}
+}
 void Protester::chooseQuickDirection() {
 	int u = 100000, d = 100000, l = 100000, r = 100000;
 	if (getY() + 1 < 64 && bfsArray[getX()][getY() + 1] != -2)
@@ -91,44 +122,6 @@ void Protester::chooseQuickDirection() {
 	}
 	waitCount = getTicksBetweenMoveCount();
 	currentState = rest;
-}
-
-Protester::Protester(StudentWorld * sw) :
-	Character(IMID_PROTESTER, 60, 60, sw, left, 1.0, 0, 10), currentState(start), moveCount(0), waitCount(0), yellCoolDown(0), quickPathFound(false) {
-	bfsArray = new int*[VIEW_WIDTH];
-	for (int i = 0; i < VIEW_WIDTH; i++)
-		bfsArray[i] = new int[VIEW_HEIGHT];
-}
-
-void Protester::doSomething() {
-	if (isAlive()) {
-		if (getHealth() <= 0 && waitCount <= 0)
-			currentState = annoyed;
-		//rest, move, annoyed, follow, start
-		switch (currentState) {
-		case start:		//init state
-			startProt();
-			break;
-		case stunned:
-			stunnedProt();
-			break;
-		case move:		//randomly moving state
-			//moveProtester is a helper function for do something
-			//just moves protester, moved to func for readablility of doSomething()
-			moveProt();
-			break;
-		case bait:
-			considerBait();
-		case annoyed:   //annoyed state, goBackToSafeSpace()
-			leave();
-			break;
-		case rest:		//resting state, either between ticks, or when annoyed
-			resting();
-			break;
-		}
-		if( yellCoolDown != 0)
-			yellCoolDown--;	
-	}
 }
 bool Protester::checkIfCanSeeDigMan() {
 	int x;
@@ -193,11 +186,10 @@ void Protester::stunnedProt() {
 	else time_stunned--;
 }
 
-void Protester::considerBait() {
-	cout << bait_time << endl; // prints
+void Protester::considerBait() { 
 	if (bait_time == 0)
 		currentState = rest;
-	else bait_time--; //gets subtracted, now becomes 99
+	else bait_time--;
 }
 void Protester::leave() {
 	if (getX() == 60 && getY() == 60)
@@ -234,9 +226,6 @@ void Protester::goBackToSafeSpace(){
 		quickPathFound = getWorld()->generateQuickPathField(bfsArray, 60, 60);
 	}
 }
-int Protester::getTicksBetweenMoveCount(){return max(0, 3 - (int)getWorld()->getLevel() / 4);}
-int Protester::getRandomDirMoveTickCount(){return (rand() % 52) + 8;}
-
 void Protester::protesterMoveHelper(int x, int y){
 	moveTo(getX() + x, getY() + y);
 	moveCount--;
@@ -263,7 +252,6 @@ void Protester::moveProtester(){
 		moveCount = getRandomDirMoveTickCount();
 	}
 }
-
 void Protester::setStateAnnoyed() {
 	currentState = annoyed;
 }
@@ -285,18 +273,14 @@ Protester::Protester(StudentWorld * sw, int id, int x, int y, Direction dir, dou
 	for (int i = 0; i < VIEW_WIDTH; i++)
 		bfsArray[i] = new int[VIEW_HEIGHT];
 }
-
-
+int Protester::getTicksBetweenMoveCount() { return max(0, 3 - (int)getWorld()->getLevel() / 4); }
+int Protester::getRandomDirMoveTickCount() { return (rand() % 52) + 8; }
 /*
 ----------------------------
 NUGGET IMPLEMENTATION
 ----------------------------
 */
-
-
-//=====Temp Nugget=====
-int TempGoldNugget::getTicksLeftTillDeath() { return ticksLeftTillDeath; }		//returns how many ticks i have till this object dies
-void TempGoldNugget::decreaseLifeTicks() { ticksLeftTillDeath--; }				//decreases their ticks by one
+//=====Temp Nugget================================================================
 void TempGoldNugget::doSomething() {
 	if (!isAlive()) return;
 	if (getTicksLeftTillDeath() == 0) {
@@ -309,7 +293,6 @@ void TempGoldNugget::doSomething() {
 			this->kill();
 			getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
 			getWorld()->increaseScore(25);
-			
 		}
 		else if (getWorld()->HCProtesterinVicinity(3, this->getX(), this->getY(), 'n')) {
 			setVisible(false);
@@ -320,9 +303,9 @@ void TempGoldNugget::doSomething() {
 		decreaseLifeTicks();
 	}
 }
-//=====Perm Nugget=====
-
-void PermGoldNugget::GoldPickedUp() { found = true; }							//gold was found
+int TempGoldNugget::getTicksLeftTillDeath() { return ticksLeftTillDeath; }		//returns how many ticks i have till this object dies
+void TempGoldNugget::decreaseLifeTicks() { ticksLeftTillDeath--; }				//decreases their ticks by one
+//=====Perm Nugget================================================================
 void PermGoldNugget::doSomething() {
 	if (!isAlive())
 		return;
@@ -339,8 +322,7 @@ void PermGoldNugget::doSomething() {
 		this->kill();
 	}
 }
-
-
+void PermGoldNugget::GoldPickedUp() { found = true; }							//gold was found
 /*
 ----------------------------
 BOULDER IMPLEMENTATION
@@ -349,8 +331,7 @@ BOULDER IMPLEMENTATION
 void Boulder::doSomething() {
 	switch (currentState) {
 	case falling:
-		if (getWorld()->isThereContact(getWorld()->dmXlocation(), getWorld()->dmYlocation(),getX(),getY())) 
-		{
+		if (getWorld()->isThereContact(getWorld()->dmXlocation(), getWorld()->dmYlocation(),getX(),getY())){
 			getWorld()->killDm();
 			currentState = done;
 			this->setVisible(false);
@@ -358,10 +339,10 @@ void Boulder::doSomething() {
 		}
 		getWorld()->killProtestorsHere(getX(), getY()); //boulder can continue to fall after it hits a protester,idk why i split the functions up,can merge later
 
-		if (getY() != 0 && !getWorld()->isDirtUnderMe(getX(), getY(), 0)) {
+		if (getY() != 0 && !getWorld()->isDirtUnderMe(getX(), getY(), 0)){
 			moveTo(getX(), getY() - 1);
 		}
-		else {
+		else{
 			currentState = done;
 			this->setVisible(false);
 			this->kill();
@@ -383,13 +364,11 @@ void Boulder::doSomething() {
 		break;
 	}
 }
-
 /*
 ----------------------------
 BARREL IMPLEMENTATION
 ----------------------------
 */
-
 void Barrel::doSomething(){
 	if (!isAlive())
 		return;
@@ -405,13 +384,11 @@ void Barrel::doSomething(){
 		this->kill();
 	}
 }
-
 /*
 ----------------------------
 SONAR KIT IMPLEMENTATION
 ----------------------------
 */
-
 void Sonar::doSomething() {
 	if (!isAlive())
 		return;
@@ -428,21 +405,16 @@ void Sonar::doSomething() {
 	}
 	decrement_tick();
 }
-
 int Sonar::current_ticks() { return ticks; }
 void Sonar::decrement_tick() { if (ticks > 0) ticks--; }
 void Sonar::set_ticks() { ticks = getWorld()->numOfSonarAndWaterTicks(); }
-
 /*
 ----------------------------
 SQUIRT GUN IMPLEMENTATION
 ----------------------------
 */
-
 void Squirt::doSomething() {
-
 	if (!isAlive()) return;
-
 	//protestorinvicinity checks if he is in range, and if he is, it damages him.
 	if (getWorld()->ProtesterinVicinity(3, getX(), getY(), 's')){
 		getWorld()->playSound(SOUND_PROTESTER_ANNOYED);
@@ -477,27 +449,22 @@ void Squirt::doSomething() {
 				this->moveTo(getWorld()->dmXlocation()-1 - squirt_distance, getWorld()->dmYlocation());
 				incrementDistance();
 			}
-
 			else kill();
-
 		}
 		else if (getDirection() == right) {
 			if (!getWorld()->isDirtRightOfMe(getWorld()->dmXlocation(), getWorld()->dmYlocation(), squirt_distance) && !getWorld()->isABoulderHere(getX(), getY(), getDirection())) {
 				this->moveTo(getWorld()->dmXlocation() + 1 + squirt_distance, getWorld()->dmYlocation());
 				incrementDistance();
 			}
-
 			else kill();
 		}
 	}
 }
-
 /*
 ----------------------------
 WATER POOL IMPLEMENTATION
 ----------------------------
 */
-
 int WaterPool::getTicksLeftTillDeath() { return ticksLeftTillDeath; }		//returns how many ticks i have till this object dies
 void WaterPool::decreaseLifeTicks() { ticksLeftTillDeath--; }				//decreases their ticks by one
 void WaterPool::doSomething() {
@@ -513,12 +480,15 @@ void WaterPool::doSomething() {
 			getWorld()->playSound(SOUND_GOT_GOODIE);
 			getWorld()->incrementSquirts();
 			getWorld()->increaseScore(100);
-
 		}
 		decreaseLifeTicks();
 	}
 }
-
+/*
+----------------------------
+HARDCORE PROTESTER IMPLEMENTATION
+----------------------------
+*/
 HardcoreProtester::HardcoreProtester(StudentWorld * sw) : Protester(sw, IMID_HARD_CORE_PROTESTER, 60, 60, left, 1.0, 0, 20), followCount(0){
 	currentState = start;
 	moveCount = 0;
@@ -526,14 +496,10 @@ HardcoreProtester::HardcoreProtester(StudentWorld * sw) : Protester(sw, IMID_HAR
 	yellCoolDown = 0;
 	quickPathFound = false;
 }
-
-
 void HardcoreProtester::doSomething(){
 	if (isAlive()) {
-		
 		if (getHealth() <= 0 && waitCount <= 0)
 			currentState = annoyed;			
-		//rest, move, annoyed, follow, start
 		switch (currentState) {
 		case start:		//init state
 			startProt();
@@ -556,7 +522,6 @@ void HardcoreProtester::doSomething(){
 			resting();
 			break;
 		}
-
 		if (yellCoolDown != 0)
 			yellCoolDown--;
 	}
