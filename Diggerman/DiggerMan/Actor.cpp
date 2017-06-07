@@ -117,6 +117,8 @@ void Protester::doSomething() {
 			//just moves protester, moved to func for readablility of doSomething()
 			moveProt();
 			break;
+		case bait:
+			considerBait();
 		case annoyed:   //annoyed state, goBackToSafeSpace()
 			leave();
 			break;
@@ -189,6 +191,13 @@ void Protester::stunnedProt() {
 	else if (time_stunned == 0)
 		currentState = rest;
 	else time_stunned--;
+}
+
+void Protester::considerBait() {
+	cout << bait_time << endl; // prints
+	if (bait_time == 0)
+		currentState = rest;
+	else bait_time--; //gets subtracted, now becomes 99
 }
 void Protester::leave() {
 	if (getX() == 60 && getY() == 60)
@@ -267,7 +276,10 @@ void Protester::stun() {
 	time_stunned = max(50, int(100 - (10 * getWorld()->getLevel())));
 	currentState = stunned; 
 }
-
+void Protester::baited() {
+	bait_time = max(50, int(100 - (10 * getWorld()->getLevel())));
+	currentState = bait;
+}
 Protester::Protester(StudentWorld * sw, int id, int x, int y, Direction dir, double size, int dep, int hp) : Character(id, x, y, sw, dir, size, dep, hp) {
 	bfsArray = new int*[VIEW_WIDTH];
 	for (int i = 0; i < VIEW_WIDTH; i++)
@@ -298,6 +310,12 @@ void TempGoldNugget::doSomething() {
 			getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
 			getWorld()->increaseScore(25);
 			
+		}
+		else if (getWorld()->HCProtesterinVicinity(3, this->getX(), this->getY(), 'n')) {
+			setVisible(false);
+			this->kill();
+			getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
+			getWorld()->increaseScore(50);
 		}
 		decreaseLifeTicks();
 	}
@@ -430,6 +448,10 @@ void Squirt::doSomething() {
 		getWorld()->playSound(SOUND_PROTESTER_ANNOYED);
 		this->kill();
 	}
+	if (getWorld()->HCProtesterinVicinity(3, getX(), getY(), 's')) {
+		getWorld()->playSound(SOUND_PROTESTER_ANNOYED);
+		this->kill();
+	}
 	if (squirt_distance == 8) {
 		this->kill();
 		return;
@@ -505,6 +527,7 @@ HardcoreProtester::HardcoreProtester(StudentWorld * sw) : Protester(sw, IMID_HAR
 	quickPathFound = false;
 }
 
+
 void HardcoreProtester::doSomething(){
 	if (isAlive()) {
 		
@@ -521,6 +544,8 @@ void HardcoreProtester::doSomething(){
 		case move:
 			moveProt();
 			break;
+		case bait:
+			considerBait();
 		case annoyed:   //annoyed state, goBackToSafeSpace()
 			leave();
 			break;
@@ -530,6 +555,7 @@ void HardcoreProtester::doSomething(){
 			resting();
 			break;
 		}
+
 		if (yellCoolDown != 0)
 			yellCoolDown--;
 	}

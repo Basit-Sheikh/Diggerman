@@ -4,32 +4,25 @@ using namespace std;
 GameWorld* createStudentWorld(string assetDir) { return new StudentWorld(assetDir); }
 int StudentWorld::init() {
 	currentKey = -1;
-	GoldBait = 0; //Created to initialize the goldbait count to zero. This will also reset the amount of gold bait at the end of every level to zero -- not sure if that should be done. 
+	GoldBait = 50; //Created to initialize the goldbait count to zero. This will also reset the amount of gold bait at the end of every level to zero -- not sure if that should be done. 
 	              //if it is not meant to be that way, we can use a flag to make sure it only runs once.
 	SonarKits = 1; //he is given 1 at the start of every level
 	OilBarrels = numOfOilBarrels();
-	SquirtsRemaining = 5;
+	SquirtsRemaining = 15;
 	Protesters = 0;
 	dm = new DiggerMan(this);
 	dm->setVisible(true);
-	fillDirt();
-	hp = new HardcoreProtester(this);
-	hp->setVisible(true);
-	
+	fillDirt();	
 	generateField("RegProtester");
-	actors.push_back(hp);
 	generateField("Barrel");
 	generateField("PermNugget");
 	generateField("Boulder");
-
-
 	return GWSTATUS_CONTINUE_GAME;
 }
 int StudentWorld::move() {
 	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
 	// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
 	HUD();
-	hp->doSomething();
 	getKey(currentKey);
 	if (currentKey == KEY_PRESS_ESCAPE) {
 		decLives();
@@ -57,6 +50,8 @@ int StudentWorld::move() {
 		int probabilityOfHardcore = min(90, int(getLevel() * 10 + 30));
 		if (rand() % probabilityOfHardcore + 1 == 1) {
 			//spawn HC PROTESTER
+			actors.push_back(new HardcoreProtester(this));
+			actors.back()->setVisible(true);
 			cout << "HC PROTESTER SPAWNED" << endl;
 		}
 		else {
@@ -172,6 +167,27 @@ bool StudentWorld::ProtesterinVicinity(int range, int x, int y, char type) {
 						playSound(SOUND_PROTESTER_GIVE_UP);
 						increaseScore(100);
 					}
+					inVicinity = true;
+				}
+			}
+		}
+	}
+	return inVicinity;
+}
+bool StudentWorld::HCProtesterinVicinity(int range, int x, int y, char type) {
+	bool inVicinity = false;
+	for (Actor* a : actors) {
+		if (a->isHCProtester()) {
+			double dist = sqrt(pow(a->getX() - x, 2) + pow(a->getY() - y, 2));
+			if (dist <= range) {
+				if (type == 'n') {  //nugget bait
+					playSound(SOUND_PROTESTER_FOUND_GOLD);
+					dynamic_cast<HardcoreProtester*>(a)->baited();
+					inVicinity = true; 
+				}    
+				else if (type == 's') {
+					dynamic_cast<HardcoreProtester*>(a)->decHealth(2);   //squirt hit
+					dynamic_cast<HardcoreProtester*>(a)->stun(); //squirt stun
 					//If the HC protester got killed by squirts
 					if (dynamic_cast<HardcoreProtester*>(a)->getHealth() <= 0) {
 						playSound(SOUND_PROTESTER_GIVE_UP);
@@ -183,7 +199,6 @@ bool StudentWorld::ProtesterinVicinity(int range, int x, int y, char type) {
 		}
 	}
 	return inVicinity;
-	
 }
 void StudentWorld::fillDirt(){
 	for (int i = 0; i < VIEW_WIDTH; i++) {
@@ -281,10 +296,17 @@ void StudentWorld::generateField(string type) {
 	if (type == "PermNugget") spawn_amount = numOfGoldNuggets();
 	else if (type == "Barrel")     spawn_amount = numOfOilBarrels();
 	else if (type == "Boulder")    spawn_amount = numOfBoulders();
-	else if (type == "RegProtester") {
+	else if (type == "RegProtester") {/*
 		actors.push_back(new Protester(this));
 		actors.back()->setVisible(true);
-		Protesters++;
+		Protesters++;*/
+		/***************************
+		
+		CHANGE THIS CODE BACK. UNCOMMENT ABOVE.
+		
+		*********************************/
+		actors.push_back(new HardcoreProtester(this));
+		actors.back()->setVisible(true);
 		return;
 	}
 	//------------------------------------------------
@@ -478,6 +500,15 @@ void StudentWorld::killProtestorsHere(int x, int y) {
 				}
 			}
 			//if its a hardcore protester, gives 500 points also
+			if (p->isHCProtester()) {
+				if (isThereContact(p->getX(), p->getY(), x, y)) {
+					if (dynamic_cast<HardcoreProtester*>(p)->getHealth() > 0) {
+						increaseScore(500);
+						playSound(SOUND_PROTESTER_GIVE_UP);
+					}
+					dynamic_cast<HardcoreProtester*>(p)->decHealth(100);
+				}
+			}
 		}	
 }
 

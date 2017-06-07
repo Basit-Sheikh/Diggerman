@@ -17,6 +17,7 @@ public:
 	StudentWorld* getWorld() const { return world; }
 	bool isAlive() const { return alive; }
 	virtual bool isRegProtester() { return false; }
+	virtual bool isHCProtester() { return false; }
 	void kill() { alive = false; }	
 protected:
 private:
@@ -48,12 +49,13 @@ private:
 
 class Protester : public Character {
 protected:
-	enum State { rest, move, annoyed, stunned, follow, start };
+	enum State { rest, move, annoyed, stunned, follow, start, bait };
 	int** bfsArray;
 	void chooseQuickDirection();
 	bool quickPathFound;	
 	int yellCoolDown;
 	int time_stunned;	
+	int bait_time;
 	int moveCount;
 	int waitCount;
 	State currentState;
@@ -76,6 +78,7 @@ protected:
 	bool checkIfCanSeeDigMan();
 	void startProt();
 	void moveProt();
+	void considerBait();
 	void stunnedProt();
 	void leave();
 	void resting();
@@ -84,6 +87,7 @@ public:
 	void decHealth(int subAm);
 	int getTicksBetweenMoveCount();
 	int getRandomDirMoveTickCount();
+	void baited();
     void stun();   
 	Protester(StudentWorld* sw, int id, int x, int y, Direction dir, double size, int dep, int hp);
 	Protester(StudentWorld * sw);
@@ -100,6 +104,7 @@ public:
 	HardcoreProtester(StudentWorld *sw);
 	void doSomething();
 	virtual bool isRegProtester() { return false; }
+	virtual bool isHCProtester() { return true; }
 private:
 	int followCount;
 
