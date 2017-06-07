@@ -546,6 +546,7 @@ void HardcoreProtester::doSomething(){
 			break;
 		case bait:
 			considerBait();
+			break;
 		case annoyed:   //annoyed state, goBackToSafeSpace()
 			leave();
 			break;

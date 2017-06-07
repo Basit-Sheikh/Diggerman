@@ -4,16 +4,16 @@ using namespace std;
 GameWorld* createStudentWorld(string assetDir) { return new StudentWorld(assetDir); }
 int StudentWorld::init() {
 	currentKey = -1;
-	GoldBait = 50; //Created to initialize the goldbait count to zero. This will also reset the amount of gold bait at the end of every level to zero -- not sure if that should be done. 
+	GoldBait = 0; //Created to initialize the goldbait count to zero. This will also reset the amount of gold bait at the end of every level to zero -- not sure if that should be done. 
 	              //if it is not meant to be that way, we can use a flag to make sure it only runs once.
 	SonarKits = 1; //he is given 1 at the start of every level
 	OilBarrels = numOfOilBarrels();
-	SquirtsRemaining = 15;
+	SquirtsRemaining = 5;
 	Protesters = 0;
 	dm = new DiggerMan(this);
 	dm->setVisible(true);
 	fillDirt();	
-	generateField("RegProtester");
+	generateField("Protester");
 	generateField("Barrel");
 	generateField("PermNugget");
 	generateField("Boulder");
@@ -52,13 +52,11 @@ int StudentWorld::move() {
 			//spawn HC PROTESTER
 			actors.push_back(new HardcoreProtester(this));
 			actors.back()->setVisible(true);
-			cout << "HC PROTESTER SPAWNED" << endl;
 		}
 		else {
 			//spawn R PROTESTER
 			actors.push_back(new Protester(this));
 			actors.back()->setVisible(true);
-			cout << "R PROTESTER SPAWNED" << endl;
 		}
 		Protesters++;
 		ProtesterTicksPassed = 0;
@@ -296,16 +294,23 @@ void StudentWorld::generateField(string type) {
 	if (type == "PermNugget") spawn_amount = numOfGoldNuggets();
 	else if (type == "Barrel")     spawn_amount = numOfOilBarrels();
 	else if (type == "Boulder")    spawn_amount = numOfBoulders();
-	else if (type == "RegProtester") {/*
-		actors.push_back(new Protester(this));
-		actors.back()->setVisible(true);
-		Protesters++;*/
-		/***************************
-		
-		CHANGE THIS CODE BACK. UNCOMMENT ABOVE.
-		
-		*********************************/
-		actors.push_back(new HardcoreProtester(this));
+	else if (type == "Protester") {
+		int probabilityOfHardcore = min(90, int(getLevel() * 10 + 30));
+		if (rand() % probabilityOfHardcore + 1 == 1) {
+			//spawn HC PROTESTER
+			actors.push_back(new HardcoreProtester(this));
+			actors.back()->setVisible(true);
+		}
+		else {
+			//spawn R PROTESTER
+			actors.push_back(new Protester(this));
+			actors.back()->setVisible(true);
+		}
+		Protesters++;
+
+
+		//actors.push_back(new HardcoreProtester(this));      code below to force spawn 1 HC Protester - testing purposes
+		//Protesters++
 		actors.back()->setVisible(true);
 		return;
 	}
@@ -332,11 +337,9 @@ void StudentWorld::generateField(string type) {
 
 		if (type == "PermNugget") {
 			actors.push_back(new PermGoldNugget(this, randX, randY));
-			actors.back()->setVisible(true);
 		}
 		else if (type == "Barrel") {
 			actors.push_back(new Barrel(randX, randY, this));
-			actors.back()->setVisible(true);
 		}
 		else if (type == "Boulder") {
 			actors.push_back(new Boulder(randX, randY, this));
